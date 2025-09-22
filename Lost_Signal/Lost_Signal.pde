@@ -1,31 +1,39 @@
 //Global Var
 public static World gameWorld; // stores and deals with the environment data
                  /// colliders -
+public static final float fixedDeltaTime = 1/10;
+public static final ArrayList<Integer> defaultLayers = new ArrayList<>() {{add(0);}};
+public static BuildingType buildMode = BuildingType.none;
 
-//Local Var
-ArrayList<Signal> activeSignals = new ArrayList<>();
-ArrayList<Integer> defaultLayers = new ArrayList<>() {{add(0);}};
+
+//Global Tracking
+/// List storing every signal
+public static ArrayList<Signal> activeSignals = new ArrayList<>();
+
+/// Map storing every building mapped to to their type
+public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new HashMap<>();
+
 
 // Called every frame
 void draw() {
   //Resets scene
   background(255);
-  frameRate(60);
-  updateSignals();
   
+  //updates - in order of rendering layer;
   gameWorld.render();
-}
-
-// Called when a mouse click occurs
-void mouseClicked() {
-  PVector clickLocation = new PVector(mouseX, mouseY);
-  gameWorld.addBuilding(clickLocation, BuildingType.mine);
+  
+  updateBuildings();
+  updateSignals();
 }
 
 // Called once at the start of the game
 void setup() {
   // Processing setup
-  size(1000, 750);
+  size(1980, 1080);
+  frameRate(60);
+  
+  // 0 frame
+  collectImages();
   
   // Game setup
   newGame();
@@ -39,6 +47,8 @@ void newGame() {
   for (int i = 0; i < 500; i++) {
     activeSignals.add(new Signal(new PVector(250, 100), new PVector(random(-1f, 1f), random(-1f, 1f))));
   }
+  
+  
 }
 // Updates and culls signals that are lost
 void updateSignals() {
@@ -48,4 +58,12 @@ void updateSignals() {
       inactiveSignals.add(s);
   }
   activeSignals.removeAll(inactiveSignals); // cull
+}
+// Updates the bulding ticks
+void updateBuildings() {
+  for (ArrayList<Building> bList : worldBuildings.values()){
+    for (Building b : bList){
+      b.tick();
+    }
+  }
 }

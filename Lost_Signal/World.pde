@@ -8,8 +8,7 @@ class World { // The main class that acts as the game world - contains global va
   public HashMap<String, Integer> cellIndices = new HashMap<>(); //Store position vectors as a string to allow direct comparison
   /// Map storing every collider in the world mapped to their index number for easy getting
   public HashMap<Integer, ArrayList<Collider>> worldColliders = new HashMap<>();
-  /// Map storing every building mapped to to their type
-  public HashMap<BuildingType, Building> worldBuildings = new HashMap<>();
+  
 
   // World settings
   boolean worldBoarderColliders = true;
@@ -34,12 +33,6 @@ class World { // The main class that acts as the game world - contains global va
     if (doRenderCells) renderCells();
     if (doColliderRendering) renderColliders();
   }
-  
-  // Building Methods
-  void addBuilding(PVector position, BuildingType type) {
-    Building newBuilding = new Building(position, type);
-    worldBuildings.put(type, newBuilding);
-  }
 
 
   // Cell methods
@@ -59,12 +52,9 @@ class World { // The main class that acts as the game world - contains global va
     return index;
   }
   
-  
   // Collision Methods
   boolean offScreen(PVector pos) {
-    if (pos.x < 0 || pos.x > width || pos.y < 0 || pos.y > height)
-      return true;
-    return false;
+    return (pos.x < 0 || pos.x > width || pos.y < 0 || pos.y > height);
   }
   
   /// Finds if inputed pos overlaps with a collider and they share a layer

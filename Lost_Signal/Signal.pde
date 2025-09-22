@@ -15,12 +15,13 @@ class Signal { // Defines the particles that transfer data
   
   // Local lifetime
   int birthTime = 0;  // Used to calculate the age, milliseconds enlapsed when generated
-  float maxAge = 20;  // Max age in seconds
+  float maxAge = 5;  // Max age in seconds
   
   // Constructors
-  Signal(PVector startPos, PVector startVelo, String data) {   
+  Signal(PVector startPos, PVector startVelo, ArrayList<Integer> layers, String data) {   
     position = startPos;
-    velocity = startVelo.normalize().mult(speed);
+    velocity = startVelo.setMag(speed);
+    this.layers = layers;
     
     birthTime = millis();
     maxAge += random(-0.5f, 0.5f); // Some variation to make it feel more natural
@@ -45,7 +46,7 @@ class Signal { // Defines the particles that transfer data
     /// Collisions
     ArrayList<CollisionData> collisionData = gameWorld.checkCollision(position, radius, layers);
     for (CollisionData c : collisionData) {
-      if (c.collisionResult)
+      if (c.collisionResult && c.physicalCollision)
           bounces.add(c.collisionNormal);
     }
     
@@ -68,11 +69,11 @@ class Signal { // Defines the particles that transfer data
   // General getters
   boolean isOld() {
     // gets how old the signal is with 0 being newborn and 1 being expired
-    float ageRatio = (millis() - birthTime)/(maxAge * 1000);
+    float ageRatio = (millis() - birthTime) / (maxAge * 1000);
     // Sets size based on age
     radius = lerp(7, 2, ageRatio);
     
-    return ageRatio >= 1;
+    return (ageRatio >= 1);
   }
   /// Calculate the reflected velocity
   PVector reflect(PVector incoming, PVector normal) {
