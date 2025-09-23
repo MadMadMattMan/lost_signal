@@ -1,7 +1,8 @@
 class Signal { // Defines the particles that transfer data 
   // Vars
   String contents;
-  ArrayList<Integer> layers = new ArrayList<>() {{add(0);}}; // default layer
+  Building origin = null;
+  ArrayList<TargetBuilding> targetBuildings = defaultBuildingType;
   
   // Local kinematics
   PVector position;
@@ -18,10 +19,12 @@ class Signal { // Defines the particles that transfer data
   float maxAge = 5;  // Max age in seconds
   
   // Constructors
-  Signal(PVector startPos, PVector startVelo, ArrayList<Integer> layers, String data) {   
+  Signal(PVector startPos, PVector startVelo, Building origin, ArrayList<TargetBuilding> targetBuildings, String data) {   
     position = startPos;
     velocity = startVelo.setMag(speed);
-    this.layers = layers;
+    
+    this.origin = origin;
+    this.targetBuildings = targetBuildings;
     
     birthTime = millis();
     maxAge += random(-0.5f, 0.5f); // Some variation to make it feel more natural
@@ -44,10 +47,15 @@ class Signal { // Defines the particles that transfer data
 
     // Kinematics
     /// Collisions
-    ArrayList<CollisionData> collisionData = gameWorld.checkCollision(position, radius, layers);
+    ArrayList<CollisionData> collisionData = gameWorld.checkCollision(position, radius, origin, targetBuildings);
     for (CollisionData c : collisionData) {
-      if (c.collisionResult && c.physicalCollision)
+      if (c.collisionResult) {
+        //if (c.physicalCollision)
           bounces.add(c.collisionNormal);
+        if (c.consumeable) {
+          
+        }
+      }
     }
     
     /// Move

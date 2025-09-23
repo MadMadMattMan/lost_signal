@@ -6,19 +6,20 @@ void collectImages() {
 // Building Methods
 void addBuilding(PVector position, BuildingType type) {
   Building newBuilding = newBuilding(position, type);
-  
-  if (!worldBuildings.keySet().contains(type))  // if not there, add it
-    worldBuildings.put(type, new ArrayList<Building>());
-    
-  worldBuildings.get(type).add(newBuilding);
+  if (newBuilding != null){
+    if (!worldBuildings.keySet().contains(type))  // if not there, add it
+      worldBuildings.put(type, new ArrayList<Building>());
+      
+    worldBuildings.get(type).add(newBuilding);
+  }
 }
-  
+
 // General constructor
 Building newBuilding(PVector pos, BuildingType type) {
   // Type specific
   switch (type) {
     case test: return new TestBuilding(pos);
-    case relay: return new RelayBuilding(pos);
+    //case relay: return new RelayBuilding(pos);
     // case export:
     default: return null;
   }
@@ -39,52 +40,46 @@ public PVector randomAim(PVector aim, float spread) {
   return aim.copy().rotate(variation).normalize();
 }
 
-// enum for simple building types
-public enum BuildingType {
-  none,
-  
-  // testing
-  test,
-  
-  // first stage
-  mine,
-  relay,
-  
-  // mid 1 stage
-  
-  // mid 2 stage
-  
-  // end stage
-  ///export
-}
-
-public interface Building{
+public interface Building{ 
   void tick();    // per frame method
   void consume(Signal receivedSignal); // take in signal
   void produce(); // do something with that signal
   void emit(int count);   // send out signals
   void render(); //draws the building
+  
+  String getBuildingId();
 }
 
+int testBuildings = 0;
 public class TestBuilding implements Building {
   // Buliding data
+  /// positional
   PVector position; // space in 2d
   PVector xySize = new PVector(25, 25); // x size, y size
   
+  /// targeting
   float spread = PI/128;   // the degree of spread
   PVector target = new PVector(1, 0).normalize(); // target direction - normalized
   
   // Building
+  String buildingId;
+  ArrayList<Integer> signalLayers = new ArrayList<>() {{add(0);}};
   ArrayList<Resource> storedResources = new ArrayList<>();
   
   Collider collider;
   
   //Constructor
   TestBuilding(PVector pos) {
+    buildingId = ("Test " + testBuildings);
+    testBuildings++;
     // General
     position = pos;
-    collider = gameWorld.createCollider(cornerOffset(pos, xySize, true), cornerOffset(pos, xySize, false), false, defaultLayers);
+    collider = gameWorld.createCollider(cornerOffset(pos, xySize, true), cornerOffset(pos, xySize, false), false, this, defaultBuildingType);
+    
+    println("placed " + buildingId);
   }
+  
+  // tick update
   float lastPulse = 0;
   float pulseRate = 100;
   void tick() {
@@ -94,36 +89,46 @@ public class TestBuilding implements Building {
       emit(15);
     }
   }
-  void consume(Signal receivedSignal) {} //does not consume
   
+  // receive, process, send
+  void consume(Signal receivedSignal) {} //does not consume
   void produce() { }
   void emit(int count) {
     for (int i = 0; i < count; i++) {
-      activeSignals.add(new Signal(position.copy(), randomAim(target, spread)));
+      activeSignals.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, ""));
     }
   }
   
+  // rendering
   void render() {
     imageMode(CENTER);
     image(factory, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
   }
+  
+  //getters
+  String getBuildingId() {return buildingId;};
 }
 
+/**
+int relayBuildings = 0;
 public class RelayBuilding implements Building {
   // Buliding data
   PVector position; // space in 2d
   PVector xySize = new PVector(25, 25); // x size, y size
   
-  float spread = PI/128;   // the degree of spread
+  float spread = PI/128;   // the rad of spread
   PVector target = new PVector(1, 0).normalize(); // target direction - normalized
   
   // Building
+  String buildingId;
   ArrayList<Resource> storedResources = new ArrayList<>();
   
   Collider collider;
   
   //Constructor
   RelayBuilding(PVector pos) {
+    buildingId = ("Relay " + relayBuildings);
+    relayBuildings++;
     // General
     position = pos;
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, true), cornerOffset(pos, xySize, false), false, defaultLayers);
@@ -150,3 +155,4 @@ public class RelayBuilding implements Building {
     image(factory, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
   }
 }
+*/

@@ -1,17 +1,22 @@
-//Global Var
-public static World gameWorld; // stores and deals with the environment data
-                 /// colliders -
+// global variables
+/// constants
 public static final float fixedDeltaTime = 1/10;
-public static final ArrayList<Integer> defaultLayers = new ArrayList<>() {{add(0);}};
-public static BuildingType buildMode = BuildingType.none;
+public static final ArrayList<TargetBuilding> defaultBuildingType = new ArrayList<>() {{add(TargetBuilding.general);}};
+
+/// tracking
+public static World gameWorld; // stores and deals with the environment data
+public static ArrayList<Signal> activeSignals = new ArrayList<>(); // List storing every signal
+public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new HashMap<>(); // Map storing every building mapped to to their type
+
+public static BuildingType buildMode = BuildingType.none; // current build target
+
+
+/// Interference
+public static float globalInterference = 0;
 
 
 //Global Tracking
-/// List storing every signal
-public static ArrayList<Signal> activeSignals = new ArrayList<>();
 
-/// Map storing every building mapped to to their type
-public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new HashMap<>();
 
 
 // Called every frame
@@ -21,7 +26,6 @@ void draw() {
   
   //updates - in order of rendering layer;
   gameWorld.render();
-  
   updateBuildings();
   updateSignals();
 }

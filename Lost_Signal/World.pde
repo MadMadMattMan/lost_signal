@@ -58,14 +58,14 @@ class World { // The main class that acts as the game world - contains global va
   }
   
   /// Finds if inputed pos overlaps with a collider and they share a layer
-  public ArrayList<CollisionData> checkCollision(PVector pos, float radius, ArrayList<Integer> layer) {
+  public ArrayList<CollisionData> checkCollision(PVector pos, float radius, Building origin, ArrayList<TargetBuilding> targetBuildings) {
     int cellIndex = findCellIndex(pos);
     ArrayList<CollisionData> collisionResults = new ArrayList<>();
     
     // Only checks colliders inside the cell of the object - saves performance from checking every collider
     if (worldColliders.keySet().contains(cellIndex)) {
       for (Collider c : worldColliders.get(cellIndex)) { 
-        CollisionData cData = c.isColliding(pos, radius, layer);
+        CollisionData cData = c.isColliding(pos, radius, origin, targetBuildings);
         collisionResults.add(cData);
       }
     }
@@ -73,9 +73,26 @@ class World { // The main class that acts as the game world - contains global va
   }
   
   /// creates a collider object and sorts and stores it
-  Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider, ArrayList<Integer> colliderLayers) {
+  Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider, Building building, ArrayList<TargetBuilding> buildingTypes) {
     // create collider object
-    Collider newCollider = new Collider(topLeft, botRight, isPhysicalCollider, colliderLayers);
+    Collider newCollider = new Collider(topLeft, botRight, isPhysicalCollider, building, buildingTypes);
+    
+    // gets the indecies and stores the collider in every needed index 
+    ArrayList<Integer> index = newCollider.getColliderIndecies();
+    for (int i : index) {
+      // creates a new entry(index, collider list) if one doesn't exist
+      if (!worldColliders.keySet().contains(i)) 
+        worldColliders.put(i, new ArrayList<Collider>());
+      
+      worldColliders.get(i).add(newCollider);
+    }
+    
+    return newCollider;
+  }
+  /// creates a 11collider object and sorts and stores it
+  Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider) {
+    // create collider object
+    Collider newCollider = new Collider(topLeft, botRight, isPhysicalCollider);
     
     // gets the indecies and stores the collider in every needed index 
     ArrayList<Integer> index = newCollider.getColliderIndecies();
@@ -132,25 +149,23 @@ class World { // The main class that acts as the game world - contains global va
   }
 
   /// Defines the world boundary colliders
-  void setupBoarders() {
-    ArrayList<Integer> boarderLayers = new ArrayList<Integer>() {{for(int i=0;i<100;i++)add(i);}};
-    
+  void setupBoarders() {   
     // top
     PVector tl = new PVector(0, bAdj(0, true));
     PVector tr = new PVector(width, bAdj(0, false));
-    createCollider(tl, tr, true, boarderLayers);
+    createCollider(tl, tr, true);
     // bottom
     PVector bl = new PVector(0, bAdj(height, true));
     PVector br = new PVector(width, bAdj(height, false));
-    createCollider(bl, br, true, boarderLayers);
+    createCollider(bl, br, true);
     // left
     PVector lt = new PVector(bAdj(0, true), 0);
     PVector lb = new PVector(bAdj(0, false), height);
-    createCollider(lt, lb, true, boarderLayers);
+    createCollider(lt, lb, true);
     // right
     PVector rt = new PVector(bAdj(width, true), 0);
     PVector rb = new PVector(bAdj(width, false), height);
-    createCollider(rt, rb, true, boarderLayers);
+    createCollider(rt, rb, true);
   }
   
   int bAdj(float o, boolean add) {

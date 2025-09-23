@@ -9,8 +9,11 @@ void keyPressed() {
    if (key == '1') {
      buildMode = BuildingType.test;
    }
-   if (key == '2') {
+   else if (key == '2') {
      buildMode = BuildingType.relay;
+   }
+   else {
+     buildMode = BuildingType.none; 
    }
    
    
