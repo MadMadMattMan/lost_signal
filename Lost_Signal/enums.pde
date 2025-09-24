@@ -16,9 +16,3 @@ public enum BuildingType {
   // end stage
   ///export
 }
-
-// enum for signal collision
-public enum TargetBuilding {
-   general,
-   
-}

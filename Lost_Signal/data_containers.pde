@@ -18,11 +18,11 @@ public static class CollisionData{
      this.consumeable = false;
      this.building = null;
    }
-   CollisionData(boolean physicalCollision, PVector collisionNormal, Boolean consumeable, Building building) { // full collision
+   CollisionData(boolean physicalCollision, PVector collisionNormal, Building building) { // full collision
      this.collisionResult = true;
      this.physicalCollision = physicalCollision;
      this.collisionNormal = collisionNormal;
-     this.consumeable = consumeable;
+     this.consumeable = true;
      this.building = building;
    }
    

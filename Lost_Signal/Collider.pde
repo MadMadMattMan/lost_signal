@@ -3,9 +3,8 @@ class Collider {
   ArrayList<Integer> colliderIndecies;
   
   Building building = null;
-  Boolean consumeable = false ;
   
-  ArrayList<TargetBuilding> buildingTypes;
+  ArrayList<BuildingType> buildingTypes = new ArrayList<>();
 
   boolean renderColliders = true;
   PVector xPoints; // minX, maxX
@@ -23,7 +22,7 @@ class Collider {
     calculateInterceptingIndexes();
   }
   // Advanced box collider constructor
-  Collider(PVector topLeft, PVector bottomRight, boolean isPhysicalCollider, Building building, ArrayList<TargetBuilding> buildingTypes) {
+  Collider(PVector topLeft, PVector bottomRight, boolean isPhysicalCollider, Building building, ArrayList<BuildingType> buildingTypes) {
     xPoints = new PVector(min(topLeft.x, bottomRight.x), max(topLeft.x, bottomRight.x));
     yPoints = new PVector(min(topLeft.y, bottomRight.y), max(topLeft.y, bottomRight.y));
     this.isPhysicalCollider = isPhysicalCollider;
@@ -34,17 +33,17 @@ class Collider {
   }
 
   // Check if a position collides with this collider
-  public CollisionData isColliding(PVector otherPosition, float radius, Building origin, ArrayList<TargetBuilding> target) {
+  public CollisionData isColliding(PVector otherPosition, float radius, Building origin, ArrayList<BuildingType> target) {
     // If a collision occurs
     if (isBetween(xPoints, otherPosition.x, radius) &&
         isBetween(yPoints, otherPosition.y, radius) &&
         !isOrigin(origin)) {
-        if (building == null)
-          return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition)); // general collision
-        
-        return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition), consumeable, building);
+      if (targetMatch(target) && building != null){ // if matching and not a obstructor - do full collision
+        return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition), building);
       }
-
+      println("basic");
+      return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition)); // general collision
+    }
     return new CollisionData(); // No collision
   }
 
@@ -58,8 +57,8 @@ class Collider {
     return ((value + radius) >= range.x && (value - radius) <= range.y);
   }
   
-  boolean targetMatch(ArrayList<TargetBuilding> target) {
-    for (TargetBuilding t : buildingTypes) {
+  boolean targetMatch(ArrayList<BuildingType> target) {
+    for (BuildingType t : buildingTypes) {
       if (target.contains(t))
         return true;
     }

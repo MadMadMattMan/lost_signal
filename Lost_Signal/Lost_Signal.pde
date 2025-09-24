@@ -1,7 +1,7 @@
 // global variables
 /// constants
-public static final float fixedDeltaTime = 1/10;
-public static final ArrayList<TargetBuilding> defaultBuildingType = new ArrayList<>() {{add(TargetBuilding.general);}};
+public static final float fixedDeltaTime = 0.1f;
+public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<>() {{add(BuildingType.test); add(BuildingType.mine); add(BuildingType.relay);}};
 
 /// tracking
 public static World gameWorld; // stores and deals with the environment data
@@ -28,6 +28,9 @@ void draw() {
   gameWorld.render();
   updateBuildings();
   updateSignals();
+  
+  globalInterference = activeSignals.size()/100;
+  //println(globalInterference);
 }
 
 // Called once at the start of the game

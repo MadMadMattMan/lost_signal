@@ -2,7 +2,7 @@ class Signal { // Defines the particles that transfer data
   // Vars
   String contents;
   Building origin = null;
-  ArrayList<TargetBuilding> targetBuildings = defaultBuildingType;
+  ArrayList<BuildingType> targetBuildings = defaultBuildingType;
   
   // Local kinematics
   PVector position;
@@ -17,9 +17,10 @@ class Signal { // Defines the particles that transfer data
   // Local lifetime
   int birthTime = 0;  // Used to calculate the age, milliseconds enlapsed when generated
   float maxAge = 5;  // Max age in seconds
+  boolean destroy = false;
   
   // Constructors
-  Signal(PVector startPos, PVector startVelo, Building origin, ArrayList<TargetBuilding> targetBuildings, String data) {   
+  Signal(PVector startPos, PVector startVelo, Building origin, ArrayList<BuildingType> targetBuildings, String data) {   
     position = startPos;
     velocity = startVelo.setMag(speed);
     
@@ -42,7 +43,7 @@ class Signal { // Defines the particles that transfer data
   // Updaters
   boolean update() {
     // Check for death
-    if (isOld() || gameWorld.offScreen(position))
+    if (isOld() || gameWorld.offScreen(position) || destroy)
       return false; // return inactive
 
     // Kinematics
@@ -50,10 +51,10 @@ class Signal { // Defines the particles that transfer data
     ArrayList<CollisionData> collisionData = gameWorld.checkCollision(position, radius, origin, targetBuildings);
     for (CollisionData c : collisionData) {
       if (c.collisionResult) {
-        //if (c.physicalCollision)
+        if (c.physicalCollision)
           bounces.add(c.collisionNormal);
         if (c.consumeable) {
-          
+          c.building.consume(this);
         }
       }
     }
@@ -89,5 +90,9 @@ class Signal { // Defines the particles that transfer data
     float dot = incoming.dot(normal);
     PVector result = incoming.sub(normal.mult(2*dot)); // r = i - 2(i.n)n
     return result;
+  }
+  
+  Signal copy(){
+    return new Signal(position, velocity, origin, targetBuildings, contents);
   }
 }

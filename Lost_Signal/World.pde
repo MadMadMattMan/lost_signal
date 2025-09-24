@@ -58,7 +58,7 @@ class World { // The main class that acts as the game world - contains global va
   }
   
   /// Finds if inputed pos overlaps with a collider and they share a layer
-  public ArrayList<CollisionData> checkCollision(PVector pos, float radius, Building origin, ArrayList<TargetBuilding> targetBuildings) {
+  public ArrayList<CollisionData> checkCollision(PVector pos, float radius, Building origin, ArrayList<BuildingType> targetBuildings) {
     int cellIndex = findCellIndex(pos);
     ArrayList<CollisionData> collisionResults = new ArrayList<>();
     
@@ -73,7 +73,7 @@ class World { // The main class that acts as the game world - contains global va
   }
   
   /// creates a collider object and sorts and stores it
-  Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider, Building building, ArrayList<TargetBuilding> buildingTypes) {
+  Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider, Building building, ArrayList<BuildingType> buildingTypes) {
     // create collider object
     Collider newCollider = new Collider(topLeft, botRight, isPhysicalCollider, building, buildingTypes);
     
