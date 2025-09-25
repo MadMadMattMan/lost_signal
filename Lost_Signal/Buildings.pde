@@ -127,7 +127,7 @@ public class RelayBuilding implements Building {
   
   //Constructor
   RelayBuilding(PVector pos) {
-    buildingId = ("Relay " + testBuildings);
+    buildingId = ("Relay " + relayBuildings);
     relayBuildings++;
     // General
     position = pos;
@@ -152,6 +152,7 @@ public class RelayBuilding implements Building {
   void emit(Signal signal, int count) {
     for (int i = 0; i < count; i++) {
       activeSignals.add(signal);
+      signal.origin = null;
     }
   }
   

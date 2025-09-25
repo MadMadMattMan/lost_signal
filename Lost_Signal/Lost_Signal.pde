@@ -25,6 +25,7 @@ void draw() {
   background(255);
   
   //updates - in order of rendering layer;
+  image(groundMap, 0, 0);
   gameWorld.render();
   updateBuildings();
   updateSignals();
@@ -36,8 +37,11 @@ void draw() {
 // Called once at the start of the game
 void setup() {
   // Processing setup
+  //fullScreen();
   size(1980, 1080);
   frameRate(60);
+  background(255);
+  text("Generating Map", 0, 0, width, height);
   
   // 0 frame
   collectImages();
@@ -49,10 +53,11 @@ void setup() {
 // Clears old game data and makes a new game
 void newGame() {
   gameWorld = new World();
+  initializeGround();
   
   // Testing setup
   for (int i = 0; i < 500; i++) {
-    activeSignals.add(new Signal(new PVector(250, 100), new PVector(random(-1f, 1f), random(-1f, 1f))));
+    activeSignals.add(new Signal(new PVector(width/2, height/2), new PVector(random(-1f, 1f), random(-1f, 1f))));
   }
   
   

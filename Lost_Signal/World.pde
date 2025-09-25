@@ -1,6 +1,6 @@
 class World { // The main class that acts as the game world - contains global variables and methods
   // Cells
-  int cellDimension = 20;
+  public int cellDimension = 20;
   PVector cellStep;
   
   // Stored Maps
@@ -11,7 +11,7 @@ class World { // The main class that acts as the game world - contains global va
   
 
   // World settings
-  boolean worldBoarderColliders = true;
+  boolean worldBoarderColliders = false;
   int worldBoarderWidth = 10;
 
   // Debugging
@@ -172,5 +172,9 @@ class World { // The main class that acts as the game world - contains global va
     if (add)
       return (int)(o + worldBoarderWidth/2);
     return (int)(o - worldBoarderWidth/2);
+  }
+  
+  float snapToGrid(float number) {
+    return Math.round(number/cellDimension) * cellDimension;
   }
 }
