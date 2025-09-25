@@ -29,5 +29,8 @@ public static class CollisionData{
 }
 
 public class Resource { 
+  public ResourceType type;
+  public int amount;
+  
   
 }

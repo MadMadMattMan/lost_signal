@@ -1,4 +1,5 @@
 public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() {{add(BuildingType.test);}};
+public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}};
 public static final ArrayList<BuildingType> relayBuilding = new ArrayList<>() {{add(BuildingType.relay);}};
 
 // Building Methods
@@ -17,6 +18,7 @@ Building newBuilding(PVector pos, BuildingType type) {
   // Type specific
   switch (type) {
     case test: return new TestBuilding(pos);
+    case mine: return new MineBuilding(pos);
     case relay: return new RelayBuilding(pos);
     // case export:
     default: return null;
@@ -42,7 +44,7 @@ public PVector randomAim(PVector aim, float spread) {
 public interface Building{ 
   void tick();    // per frame method
   void consume(Signal receivedSignal); // take in signal
-  void produce(); // do something with that signal
+  void produce(Signal processingSignal); // do something with that signal
   void emit(Signal s, int count);   // send out signals
   void render(); //draws the building
   
@@ -94,7 +96,7 @@ public class TestBuilding implements Building {
   
   // receive, process, send
   void consume(Signal receivedSignal) {} // does not consume
-  void produce() { } // does not produce
+  void produce(Signal processingSignal) { } // does not produce
   void emit(Signal s, int count) {
     for (int i = 0; i < count; i++) {
       activeSignals.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, ""));
@@ -111,67 +113,5 @@ public class TestBuilding implements Building {
   PVector getBuildingPosition() {return position.copy();}
   
   //setters
-  void setAim(PVector newAim) {target = newAim;}
-}
-
-int relayBuildings = 0;
-public class RelayBuilding implements Building {
-  // Buliding data
-  /// positional
-  PVector position; // space in 2d
-  PVector xySize = new PVector(25, 25); // x size, y size
-  
-  /// targeting
-  float spread = PI/256;   // the degree of spread
-  PVector target = new PVector(1, 0).normalize(); // target direction - normalized
-  
-  // Building
-  String buildingId;
-  ArrayList<Resource> storedResources = new ArrayList<>();
-  ArrayList<Signal> toSend = new ArrayList<>();
-  
-  Collider collider;
-  
-  //Constructor
-  RelayBuilding(PVector pos) {
-    buildingId = ("Relay " + relayBuildings);
-    relayBuildings++;
-    // General
-    position = pos;
-    collider = gameWorld.createCollider(cornerOffset(pos, xySize, true), cornerOffset(pos, xySize, false), false, this, relayBuilding);
-    
-    println("placed " + buildingId);
-  }
-  
-  void tick() {
-    render();
-    for (Signal s : toSend)
-      emit(s, 1);
-    toSend.clear();
-  }
-  
-  // receive, process, send
-  void consume(Signal receivedSignal) {
-    receivedSignal.destroy = true;
-    toSend.add(receivedSignal.copy());
-  } 
-  void produce() { }
-  void emit(Signal signal, int count) {
-    for (int i = 0; i < count; i++) {
-      activeSignals.add(signal);
-      signal.origin = null;
-    }
-  }
-  
-  // rendering
-  void render() {
-    image(factory, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
-  }
-  
-  //getters
-  String getBuildingId() {return buildingId;};
-  PVector getBuildingPosition() {return position.copy();}
-  
-  //setter
   void setAim(PVector newAim) {target = newAim;}
 }

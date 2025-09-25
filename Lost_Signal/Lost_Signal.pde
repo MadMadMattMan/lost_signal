@@ -14,18 +14,13 @@ public static BuildingType buildMode = BuildingType.none; // current build targe
 /// Interference
 public static float globalInterference = 0;
 
-
-//Global Tracking
-
-
-
 // Called every frame
 void draw() {
   //Resets scene
   background(255);
   
   //updates - in order of rendering layer;
-  image(groundMap, 0, 0);
+  image(gameWorld.getGroundMap(), 0, 0);
   gameWorld.render();
   updateBuildings();
   updateSignals();

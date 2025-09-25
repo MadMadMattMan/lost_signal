@@ -58,16 +58,14 @@ void mouseReleased() {
 
 // Called when a key click occurs
 void keyPressed() {
-   if (key == '1') {
+   if (key == '1') 
      buildMode = BuildingType.test;
-   }
-   else if (key == '2') {
+   else if (key == '2') 
      buildMode = BuildingType.relay;
-   }
-   else {
+   else if (key == '3')
+     buildMode = BuildingType.mine;
+   else 
      buildMode = BuildingType.none; 
-   }
-   
    
    println("current mode: " + buildMode);
 }

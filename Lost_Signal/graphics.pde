@@ -1,7 +1,12 @@
-PImage factory;
+// Image gathering
+PImage mine, relay, factory;
 void collectImages() {
+  mine = loadImage("assets/buildings/mine.png"); 
+  relay = loadImage("assets/buildings/relay.png"); 
   factory = loadImage("assets/buildings/factory.png"); 
 }
+
+
 
 
 
@@ -10,15 +15,11 @@ int resolution = 1;
 int seed = 0;
 int grid;
 
-PImage groundMap;
-
-
-
 void initializeGround() {
   noiseSeed(seed);
   noiseDetail(resolution);
   grid = gameWorld.cellDimension;
-  groundMap = generatePerlinGround();
+  gameWorld.setGroundMap(generatePerlinGround());
 }
 
 color max = color(255, 190, 200);

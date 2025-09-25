@@ -1,4 +1,4 @@
-// enum for simple building types
+// enum for building types
 public enum BuildingType {
   none,
   
@@ -14,5 +14,29 @@ public enum BuildingType {
   // mid 2 stage
   
   // end stage
-  ///export
+  /// export
+}
+
+// enum for resource types
+public enum ResourceType {
+  // 1
+  /// miners
+  coal, // material, fuel
+  iron, // material
+  copper, // material
+  
+  // 2
+  steel, // coal + iron
+  electromagnet, // iron + copper
+  thermoConductor, // coal + copper
+  
+  // 3
+  pulseCore, // steel + electromagnet
+  fluxium,   // thermoConductor + electromagnet
+  pyroSteel, // thermoConductor + steel
+  
+  // ruined
+  scrap,
+  
+  
 }

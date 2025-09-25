@@ -9,7 +9,9 @@ class World { // The main class that acts as the game world - contains global va
   /// Map storing every collider in the world mapped to their index number for easy getting
   public HashMap<Integer, ArrayList<Collider>> worldColliders = new HashMap<>();
   
-
+  // Ground data
+  PImage groundMap;
+  
   // World settings
   boolean worldBoarderColliders = true;
   int worldBoarderWidth = 10;
@@ -177,4 +179,10 @@ class World { // The main class that acts as the game world - contains global va
   float snapToGrid(float number) {
     return Math.round(number/cellDimension) * cellDimension;
   }
+  
+  PImage getGroundMap() {return groundMap.copy();}
+  void setGroundMap(PImage newGroundMap) {groundMap = newGroundMap.copy();}
+  float getGroundMapValueAt(PVector pos) {return noise(pos.x, pos.y);}
+  
+  
 }
