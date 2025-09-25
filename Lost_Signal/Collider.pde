@@ -41,8 +41,7 @@ class Collider {
       if (targetMatch(target) && building != null){ // if matching and not a obstructor - do full collision
         return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition), building);
       }
-      println("basic");
-      return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition)); // general collision
+      return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition)); // else general collision
     }
     return new CollisionData(); // No collision
   }

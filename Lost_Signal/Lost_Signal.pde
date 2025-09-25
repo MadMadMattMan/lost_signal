@@ -30,6 +30,8 @@ void draw() {
   updateBuildings();
   updateSignals();
   
+  updateMouse();
+  
   globalInterference = activeSignals.size()/100;
   //println(globalInterference);
 }

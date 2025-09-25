@@ -47,6 +47,9 @@ public interface Building{
   void render(); //draws the building
   
   String getBuildingId();
+  PVector getBuildingPosition();
+  
+  void setAim(PVector newAim);
 }
 
 int testBuildings = 0;
@@ -105,6 +108,10 @@ public class TestBuilding implements Building {
   
   //getters
   String getBuildingId() {return buildingId;};
+  PVector getBuildingPosition() {return position.copy();}
+  
+  //setters
+  void setAim(PVector newAim) {target = newAim;}
 }
 
 int relayBuildings = 0;
@@ -163,4 +170,8 @@ public class RelayBuilding implements Building {
   
   //getters
   String getBuildingId() {return buildingId;};
+  PVector getBuildingPosition() {return position.copy();}
+  
+  //setter
+  void setAim(PVector newAim) {target = newAim;}
 }

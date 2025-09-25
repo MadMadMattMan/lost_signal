@@ -11,7 +11,7 @@ class World { // The main class that acts as the game world - contains global va
   
 
   // World settings
-  boolean worldBoarderColliders = false;
+  boolean worldBoarderColliders = true;
   int worldBoarderWidth = 10;
 
   // Debugging
