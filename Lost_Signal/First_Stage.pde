@@ -12,9 +12,14 @@ public class MineBuilding implements Building {
   
   // Building
   String buildingId;
+  BuildingType type;
   Resource storedResources;
   Resource overflowResources;
   ArrayList<Signal> toSend = new ArrayList<>();
+  
+  // Info Rendering
+  InfoPanel infoPanel;
+  boolean renderInfo = false;
   
   // Miner
   ResourceType selectedOre = ResourceType.iron;
@@ -44,8 +49,6 @@ public class MineBuilding implements Building {
     renderX = (int)(position.x - xySize.x);
     renderY = (int)(position.y - xySize.y);
     dSize = (int)(xySize.x * 2);
-    
-    println("placed " + buildingId);
   }
   
   void tickFrame() { // per frame method
@@ -85,9 +88,18 @@ public class MineBuilding implements Building {
   //getters
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
+  BuildingData getBuildingData() {
+     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+  }
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
+  void toggleInfo() {
+    renderInfo = !renderInfo; // toggle bool
+    
+    if (renderInfo) // takes a new snapshot of data
+      infoPanel = new InfoPanel(getBuildingData());
+  }
 }
 
 
@@ -106,8 +118,13 @@ public class RelayBuilding implements Building {
   
   // Building
   String buildingId;
+  BuildingType type;
   ArrayList<Resource> storedResources = new ArrayList<>();
   ArrayList<Signal> toSend = new ArrayList<>();
+  
+  // Info Rendering
+  InfoPanel infoPanel;
+  boolean renderInfo = false;
   
   Collider collider;
   
@@ -118,8 +135,6 @@ public class RelayBuilding implements Building {
     // General
     position = pos;
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), false, this, relayBuilding);
-    
-    println("placed " + buildingId);
   }
   
   void tickFrame() {
@@ -152,7 +167,16 @@ public class RelayBuilding implements Building {
   //getters
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
+  BuildingData getBuildingData() {
+     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+  }
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
+  void toggleInfo() {
+    renderInfo = !renderInfo; // toggle bool
+    
+    if (renderInfo) // takes a new snapshot of data
+      infoPanel = new InfoPanel(getBuildingData());
+  }
 }

@@ -28,6 +28,12 @@ public ResourceType randomType() {
   }
 }
 
+// enum for info panel actions
+public enum ButtonAction {
+  destroy,
+  
+}
+
 // enum for resource types
 public enum ResourceType {
   none,

@@ -3,64 +3,87 @@ PVector clickLocation = new PVector();
 Building clickBuilding;
 PVector releaseLocation = new PVector();
 Building releaseBuilding;
+Button releaseButton;
+PVector holdLocation = new PVector();
 
 PVector aimDir = new PVector();
 
 boolean lmDown = false;
 boolean rmDown = false;
-boolean validPlacement = true;
+
+double startHoldTime = 0;
+double holdTime = 0;
+
+boolean validPlacement = false;
 
 void mousePressed() {
+  // gather click data
   clickLocation.set(mouseX, mouseY);
   clickBuilding = clickBuilding(clickLocation);
     
-  println("clicked on " + clickBuilding);
   if (mouseButton == LEFT) {
     lmDown = true;
   }
   if (mouseButton == RIGHT) {
     rmDown = true;
-    println("rmDown = true");
   }
+  
+  startHoldTime = millis(); // start hold timer
 }
-void updateMouse() {   
-  if (rmDown && clickBuilding != null) {
-    stroke(0,0, 255);
-    strokeWeight(5);
-    PVector startPos = clickBuilding.getBuildingPosition();
-    aimDir = new PVector(mouseX - startPos.x, mouseY - startPos.y).normalize();
-    line(startPos.x, startPos.y, startPos.x+aimDir.x*100, startPos.y+aimDir.y*100);
-    
-    PVector end = new PVector(startPos.x + aimDir.x * 100, startPos.y + aimDir.y * 100);
-    line(startPos.x, startPos.y, end.x, end.y);
-  }
-  if (lmDown && buildMode != BuildingType.none) {
-    validPlacement = checkPlacement(new PVector(mouseX, mouseY), new PVector(25,25));
-    if (validPlacement)
-      stroke(0, 255, 0);
-    else
-      stroke(255, 0, 0);
+void updateMouse() {
+  holdLocation.set(mouseX, mouseY);
+  
+  if (rmDown) { // right mouse is held down
+    holdTime = millis() - startHoldTime;
+    if (clickBuilding != null && holdTime > 200) { // right mouse is being held on a building & has held for more than .2s
+      stroke(0,0, 255);
+      strokeWeight(5);
+      PVector startPos = clickBuilding.getBuildingPosition();
+      aimDir = new PVector(holdLocation.x - startPos.x, holdLocation.y - startPos.y).normalize();
+      line(startPos.x, startPos.y, startPos.x+aimDir.x*100, startPos.y+aimDir.y*100);
       
-    noFill();
-    rectMode(CENTER);
-    square(mouseX, mouseY, 50);
-    circle(mouseX, mouseY, 10);
+      PVector end = new PVector(startPos.x + aimDir.x * 100, startPos.y + aimDir.y * 100);
+      line(startPos.x, startPos.y, end.x, end.y);
+    }
+  }
+  if (lmDown) { // left mouse is held down
+    holdTime = millis() - startHoldTime;
+    if (buildMode != BuildingType.none && holdTime > 200) { // building is selected for placing
+      validPlacement = checkPlacement(new PVector(holdLocation.x, holdLocation.y), new PVector(25,25));
+      if (validPlacement)
+        stroke(0, 255, 0);
+      else
+        stroke(255, 0, 0);
+        
+      noFill();
+      rectMode(CENTER);
+      square(holdLocation.x, holdLocation.y, 50); // outline
+      circle(holdLocation.x, holdLocation.y, 10); // resource pickup
+    }
   }
 }
 
 void mouseReleased() {
+  // gather click data
   releaseLocation.set(mouseX, mouseY);
+  
+  releaseButton = clickButton(releaseLocation);
   releaseBuilding = clickBuilding(releaseLocation);
-  if (mouseButton == LEFT) {
+  
+  if (mouseButton == LEFT) { // released left
     lmDown = false;
-    if (validPlacement && buildMode != BuildingType.none) {
-      addBuilding(releaseLocation.copy(), buildMode); // Only add if no building exists
-      buildMode = BuildingType.none;
+    if (releaseButton != null) {
+      println("releaseButton!=null");
+      releaseButton.click(); 
     }
-    else if (!validPlacement && releaseBuilding != null)
-      println("Release location already has a building\n");
-    else if (!validPlacement)
-      println("Release location too close to another collider\n");
+    else if (validPlacement) { // validPlacement set if holding, so if building hold is released
+      addBuilding(releaseLocation.copy(), buildMode);
+      buildMode = BuildingType.none; // reset
+      validPlacement = false;
+    }
+    else if (releaseBuilding != null) { // clicked on a building
+      releaseBuilding.toggleInfo();
+    }
   }
 
 
@@ -70,6 +93,8 @@ void mouseReleased() {
       clickBuilding.setAim(aimDir.copy()); 
     }
   }
+  
+  holdTime = 0;
 }
 
 
@@ -84,15 +109,22 @@ void keyPressed() {
    else 
      buildMode = BuildingType.none; 
    
-   println("current mode: " + buildMode);
+   println("\n\ncurrent mode: " + buildMode);
+}
+
+Button clickButton(PVector location) {
+  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType); // persice click
+  Button clickButton = null;
+  for (CollisionData cData : clickData) {
+    clickButton = cData.button;
+    if (clickButton != null)
+      return clickButton;
+  }
+  return null;
 }
 
 Building clickBuilding(PVector location) {
-  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType); // persice click
-  if (clickData.size() <= 0) {
-    println("forgiving click");
-    clickData = gameWorld.checkCollision(location.copy(), 25, null, defaultBuildingType); // forgiving click
-  }
+  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType);
   Building clickBuilding = null;
   for (CollisionData cData : clickData) {
     clickBuilding = cData.building;

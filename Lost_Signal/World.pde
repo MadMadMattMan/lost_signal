@@ -18,7 +18,7 @@ class World { // The main class that acts as the game world - contains global va
 
   // Debugging
   boolean doDebugRendering = true;
-  boolean doRenderCells = true;
+  boolean doRenderCells = false;
   boolean doColliderRendering = true;
 
 
@@ -95,10 +95,27 @@ class World { // The main class that acts as the game world - contains global va
     
     return newCollider;
   }
-  /// creates a 11collider object and sorts and stores it
+  /// creates a collider object and sorts and stores it
   Collider createCollider(PVector topLeft, PVector botRight, boolean isPhysicalCollider) {
     // create collider object
     Collider newCollider = new Collider(topLeft, botRight, isPhysicalCollider);
+    
+    // gets the indecies and stores the collider in every needed index 
+    ArrayList<Integer> index = newCollider.getColliderIndecies();
+    for (int i : index) {
+      // creates a new entry(index, collider list) if one doesn't exist
+      if (!worldColliders.keySet().contains(i)) 
+        worldColliders.put(i, new ArrayList<Collider>());
+      
+      worldColliders.get(i).add(newCollider);
+    }
+    
+    return newCollider;
+  }
+  /// creates a collider for a button
+  Collider createCollider(PVector topLeft, PVector botRight, Button button) {
+    // create collider object
+    Collider newCollider = new Collider(topLeft, botRight, button);
     
     // gets the indecies and stores the collider in every needed index 
     ArrayList<Integer> index = newCollider.getColliderIndecies();

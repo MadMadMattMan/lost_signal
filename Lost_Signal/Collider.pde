@@ -1,8 +1,8 @@
 class Collider {
-  String colliderId;
   ArrayList<Integer> colliderIndecies;
   
   Building building = null;
+  Button button = null;
   
   ArrayList<BuildingType> buildingTypes = new ArrayList<>();
 
@@ -28,6 +28,16 @@ class Collider {
     this.isPhysicalCollider = isPhysicalCollider;
     this.building = building;
     this.buildingTypes = buildingTypes;
+    // Calculate which cells this collider intersects
+    calculateInterceptingIndexes();
+  }
+  // infoPanel constructor
+  Collider(PVector topLeft, PVector bottomRight, Button button) {
+     // Sort and store x and y bounds
+    xPoints = new PVector(min(topLeft.x, bottomRight.x), max(topLeft.x, bottomRight.x));
+    yPoints = new PVector(min(topLeft.y, bottomRight.y), max(topLeft.y, bottomRight.y));
+    this.isPhysicalCollider = false;
+    this.button = button;
     // Calculate which cells this collider intersects
     calculateInterceptingIndexes();
   }

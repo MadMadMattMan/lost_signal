@@ -50,18 +50,24 @@ public PVector randomAim(PVector aim, float spread) {
 }
 
 public interface Building{ 
+  // constant
   void tickFrame();    // per frame method
   void tickSecond();  // per second method
   
+  // event
   void consume(Signal receivedSignal); // take in signal
   void produce(Signal processingSignal); // do something with that signal
   void emit(Signal s);   // send out signals
   void render(); //draws the building
   
+  // getters
   String getBuildingId();
   PVector getBuildingPosition();
+  BuildingData getBuildingData();
   
+  // setters
   void setAim(PVector newAim);
+  void toggleInfo();
 }
 
 int testBuildings = 0;
@@ -76,9 +82,14 @@ public class TestBuilding implements Building {
   PVector target = new PVector(1, 0).normalize(); // target direction - normalized
   
   // Building
+  BuildingType type;
   String buildingId;
   ArrayList<Integer> signalLayers = new ArrayList<>() {{add(0);}};
   ArrayList<Resource> storedResources = new ArrayList<>();
+  
+  // Info Rendering
+  InfoPanel infoPanel;
+  boolean renderInfo = false;
   
   Collider collider;
   
@@ -90,14 +101,15 @@ public class TestBuilding implements Building {
     position = pos;
 
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, testBuilding);
-    
-    println("placed " + buildingId);
   }
   
   // tick update
   float lastPulse = 0;
   float pulseRate = 100;
-  void tickFrame() {render();}
+  void tickFrame() {
+    render(); 
+    if (renderInfo) infoPanel.render();
+  }
   void tickSecond() {emit(null);}
   // receive, process, send
   void consume(Signal receivedSignal) {} // does not consume
@@ -116,7 +128,16 @@ public class TestBuilding implements Building {
   //getters
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
+  BuildingData getBuildingData() {
+     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+  }
   
   //setters
   void setAim(PVector newAim) {target = newAim;}
+  void toggleInfo() {
+    renderInfo = !renderInfo; // toggle bool
+    
+    if (renderInfo) // takes a new snapshot of data
+      infoPanel = new InfoPanel(getBuildingData());
+  }
 }

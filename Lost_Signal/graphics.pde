@@ -6,7 +6,72 @@ void collectImages() {
   factory = loadImage("assets/buildings/factory.png"); 
 }
 
+// Building info screen
+class InfoPanel {
+  HashMap<ButtonAction, Button> buttons = new HashMap<>();
+  ArrayList<Collider> colliders = new ArrayList<>();
+  PVector destroyButtonPos, destroyButtonAlt;
+  Building building;
+  BuildingType type;
+  
+  PVector topLeft = new PVector();
+  PVector bottomRight;
+  PVector xySize = new PVector(60, 100);
+  int offset = 5;
+  int destroyButtonSize = 20;
+  
+  InfoPanel(BuildingData bData) {
+    this.building = bData.building;
+    this.type = bData.type;
+    PVector buildingPos = bData.pos;
+    PVector buildingSize = bData.xySize;
+    topLeft.x = buildingPos.x - buildingSize.x - xySize.x - offset;
+    topLeft.y = buildingPos.y + buildingSize.y - xySize.y;
+    bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
+    
+    buttons.put(ButtonAction.destroy, new Button(this, ButtonAction.destroy));
+    destroyButtonPos = new PVector(bottomRight.x - destroyButtonSize, bottomRight.y - destroyButtonSize);
+    destroyButtonAlt = bottomRight.copy();
+  }
+  
+  public void clickEvent(ButtonAction action) {
+    println("Received click for button " + action);
+    switch (action) {
+      case destroy: worldBuildings.get(type).remove(building); break;
+      default: println("unknown InfoPanel button press");
+    }
+  }
+  
+  void initialize(boolean state) {
+    if (state) { // setup
+      gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.destroy)); 
+    }
+    else { // destroy
+      
+    }
+  }
+  
+  public void render() {
+    // Panel render
+    stroke(0);
+    strokeWeight(1);
+    fill(200);
+    rectMode(CORNER);
+    rect(topLeft.x, topLeft.y, xySize.x, xySize.y);
+    
+    // Destroy render
+    fill(200, 50, 50);
+    rect(destroyButtonPos.x, destroyButtonPos.y, destroyButtonSize, destroyButtonSize);
+    
+    
+    //Text render
+  }
+}
+
+
+
 // Ground map settings
+int algorithmType = 0;
 int resolution = 1;
 int seed = -1;
 int grid;
@@ -38,7 +103,14 @@ void initializeGround() {
     
   noiseDetail(resolution);
   grid = gameWorld.cellDimension;
-  gameWorld.setGroundMap(generatePerlinGround());
+  if (algorithmType == 0) {
+    gameWorld.setGroundMap(generatePerlinGround());
+  }
+  else {
+    gameWorld.setGroundMap(generateGridGround());
+  }
+    
+  println("\n\nGenerated map using " + algorithmType + " with the seed " + noise(0));
 }
 
 HashMap<String, PVector> biomeColMap = new HashMap<>();
