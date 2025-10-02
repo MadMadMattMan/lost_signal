@@ -143,6 +143,10 @@ class Collider {
     float w = xPoints.y - xPoints.x;
     float h = yPoints.y - yPoints.x;
   
+    rectMode(CORNER);
     rect(xPoints.x, yPoints.x, w, h);
+    
+    
+    stroke(0); fill(0); circle(xPoints.x, yPoints.x, 5); circle(xPoints.y, yPoints.x, 5); circle(xPoints.x, yPoints.y, 5); circle(xPoints.y, yPoints.y, 5);
   }
 }

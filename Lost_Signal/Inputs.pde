@@ -8,11 +8,11 @@ PVector aimDir = new PVector();
 
 boolean lmDown = false;
 boolean rmDown = false;
+boolean validPlacement = true;
 
 void mousePressed() {
   clickLocation.set(mouseX, mouseY);
-  ArrayList<CollisionData> clickData = gameWorld.checkCollision(clickLocation.copy(), 5, null, defaultBuildingType);
-  clickBuilding = (clickData.size() > 0) ? clickData.get(0).building : null;
+  clickBuilding = clickBuilding(clickLocation);
     
   println("clicked on " + clickBuilding);
   if (mouseButton == LEFT) {
@@ -25,25 +25,42 @@ void mousePressed() {
 }
 void updateMouse() {   
   if (rmDown && clickBuilding != null) {
-     stroke(0,0, 255);
-     strokeWeight(5);
-     PVector startPos = clickBuilding.getBuildingPosition();
-     aimDir = new PVector(mouseX - startPos.x, mouseY - startPos.y).normalize();
-     line(startPos.x, startPos.y, startPos.x+aimDir.x*100, startPos.y+aimDir.y*100);
+    stroke(0,0, 255);
+    strokeWeight(5);
+    PVector startPos = clickBuilding.getBuildingPosition();
+    aimDir = new PVector(mouseX - startPos.x, mouseY - startPos.y).normalize();
+    line(startPos.x, startPos.y, startPos.x+aimDir.x*100, startPos.y+aimDir.y*100);
+    
+    PVector end = new PVector(startPos.x + aimDir.x * 100, startPos.y + aimDir.y * 100);
+    line(startPos.x, startPos.y, end.x, end.y);
+  }
+  if (lmDown && buildMode != BuildingType.none) {
+    validPlacement = checkPlacement(new PVector(mouseX, mouseY), new PVector(25,25));
+    if (validPlacement)
+      stroke(0, 255, 0);
+    else
+      stroke(255, 0, 0);
+      
+    noFill();
+    rectMode(CENTER);
+    square(mouseX, mouseY, 50);
+    circle(mouseX, mouseY, 10);
   }
 }
 
 void mouseReleased() {
-   releaseLocation.set(mouseX, mouseY);
-  ArrayList<CollisionData> clickData = gameWorld.checkCollision(releaseLocation.copy(), 5, null, defaultBuildingType);
-  releaseBuilding = (clickData.size() > 0) ? clickData.get(0).building : null;
+  releaseLocation.set(mouseX, mouseY);
+  releaseBuilding = clickBuilding(releaseLocation);
   if (mouseButton == LEFT) {
     lmDown = false;
-    if (releaseBuilding == null) {
+    if (validPlacement && buildMode != BuildingType.none) {
       addBuilding(releaseLocation.copy(), buildMode); // Only add if no building exists
-    } else {
-      println("Release location already has a building. Skipping add.");
+      buildMode = BuildingType.none;
     }
+    else if (!validPlacement && releaseBuilding != null)
+      println("Release location already has a building\n");
+    else if (!validPlacement)
+      println("Release location too close to another collider\n");
   }
 
 
@@ -68,4 +85,34 @@ void keyPressed() {
      buildMode = BuildingType.none; 
    
    println("current mode: " + buildMode);
+}
+
+Building clickBuilding(PVector location) {
+  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType); // persice click
+  if (clickData.size() <= 0) {
+    println("forgiving click");
+    clickData = gameWorld.checkCollision(location.copy(), 25, null, defaultBuildingType); // forgiving click
+  }
+  Building clickBuilding = null;
+  for (CollisionData cData : clickData) {
+    clickBuilding = cData.building;
+    if (clickBuilding != null)
+      return clickBuilding;
+  }
+  return null;
+}
+
+
+boolean checkPlacement(PVector location, PVector size) {
+  // check all corner collisions
+  ArrayList<CollisionData> collisions = new ArrayList<>();
+  for (int i = 0; i < 4; i++) {
+    collisions.addAll(gameWorld.checkCollision(cornerOffset(location, size, i), 2, null, defaultBuildingType));
+  }
+  for (CollisionData c : collisions) {
+      if (c.collisionResult || c.invalidCollision)
+        return false;
+    }
+
+  return true; // true if no collisions
 }

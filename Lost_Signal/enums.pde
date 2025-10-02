@@ -16,9 +16,22 @@ public enum BuildingType {
   // end stage
   /// export
 }
+public ResourceType randomType() {
+  int rand = int(random(3)); 
+  switch (rand) {
+    case 1:
+      return ResourceType.iron;
+    case 2:
+      return ResourceType.copper;
+    default:
+      return ResourceType.coal;
+  }
+}
 
 // enum for resource types
 public enum ResourceType {
+  none,
+  
   // 1
   /// miners
   coal, // material, fuel
@@ -37,6 +50,12 @@ public enum ResourceType {
   
   // ruined
   scrap,
-  
-  
+}
+
+public static HashMap<ResourceType, PVector> resourceSignalColor = new HashMap<>();
+static {
+  resourceSignalColor.put(ResourceType.none, new PVector(214, 37, 152));
+  resourceSignalColor.put(ResourceType.coal, new PVector(0, 0, 0));
+  resourceSignalColor.put(ResourceType.iron, new PVector(165, 156, 148));
+  resourceSignalColor.put(ResourceType.copper, new PVector(203, 96, 21));
 }

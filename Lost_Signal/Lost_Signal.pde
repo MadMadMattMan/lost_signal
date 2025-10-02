@@ -15,6 +15,9 @@ public static BuildingType buildMode = BuildingType.none; // current build targe
 public static float globalInterference = 0;
 
 // Called every frame
+float lastPulse = 0;
+float pulseRate = 5*1000;
+
 void draw() {
   //Resets scene
   background(255);
@@ -22,13 +25,18 @@ void draw() {
   //updates - in order of rendering layer;
   image(gameWorld.getGroundMap(), 0, 0);
   gameWorld.render();
-  updateBuildings();
+  updateBuildings(true);
   updateSignals();
   
   updateMouse();
   
   globalInterference = activeSignals.size()/100;
-  //println(globalInterference);
+  
+  //one second update
+  if ((millis() - lastPulse) >= 1000) {
+    lastPulse = millis();
+    updateBuildings(false);
+  }
 }
 
 // Called once at the start of the game
@@ -50,6 +58,9 @@ void setup() {
 // Clears old game data and makes a new game
 void newGame() {
   gameWorld = new World();
+  activeSignals.clear();
+  worldBuildings.clear();
+  
   initializeGround();
   
   // Testing setup
@@ -69,10 +80,13 @@ void updateSignals() {
   activeSignals.removeAll(inactiveSignals); // cull
 }
 // Updates the bulding ticks
-void updateBuildings() {
+void updateBuildings(boolean tickFrame) {
   for (ArrayList<Building> bList : worldBuildings.values()){
     for (Building b : bList){
-      b.tick();
+      if (tickFrame)
+        b.tickFrame();
+      else
+        b.tickSecond();
     }
   }
 }

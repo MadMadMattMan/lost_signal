@@ -18,7 +18,7 @@ class World { // The main class that acts as the game world - contains global va
 
   // Debugging
   boolean doDebugRendering = true;
-  boolean doRenderCells = false;
+  boolean doRenderCells = true;
   boolean doColliderRendering = true;
 
 
@@ -61,8 +61,12 @@ class World { // The main class that acts as the game world - contains global va
   
   /// Finds if inputed pos overlaps with a collider and they share a layer
   public ArrayList<CollisionData> checkCollision(PVector pos, float radius, Building origin, ArrayList<BuildingType> targetBuildings) {
-    int cellIndex = findCellIndex(pos);
     ArrayList<CollisionData> collisionResults = new ArrayList<>();
+    int cellIndex = findCellIndex(pos);
+    if (cellIndex == -1) {
+      collisionResults.add(new CollisionData(true));
+      return collisionResults;
+    }   
     
     // Only checks colliders inside the cell of the object - saves performance from checking every collider
     if (worldColliders.keySet().contains(cellIndex)) {
@@ -151,7 +155,7 @@ class World { // The main class that acts as the game world - contains global va
   }
 
   /// Defines the world boundary colliders
-  void setupBoarders() {   
+  void setupBoarders() {
     // top
     PVector tl = new PVector(0, bAdj(0, true));
     PVector tr = new PVector(width, bAdj(0, false));
@@ -176,13 +180,13 @@ class World { // The main class that acts as the game world - contains global va
     return (int)(o - worldBoarderWidth/2);
   }
   
-  float snapToGrid(float number) {
-    return Math.round(number/cellDimension) * cellDimension;
-  }
-  
   PImage getGroundMap() {return groundMap.copy();}
   void setGroundMap(PImage newGroundMap) {groundMap = newGroundMap.copy();}
   float getGroundMapValueAt(PVector pos) {return noise(pos.x, pos.y);}
-  
-  
+  int getGroundZoneAt(PVector pos) {
+    int pixel = (int)(pos.x + (pos.y * width));
+    color c = groundMap.copy().pixels[pixel];
+    
+    return -1;
+  }
 }

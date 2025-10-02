@@ -3,14 +3,15 @@ public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{a
 public static final ArrayList<BuildingType> relayBuilding = new ArrayList<>() {{add(BuildingType.relay);}};
 
 // Building Methods
-void addBuilding(PVector position, BuildingType type) {
+Building addBuilding(PVector position, BuildingType type) {
   Building newBuilding = newBuilding(position, type);
   if (newBuilding != null){
     if (!worldBuildings.keySet().contains(type))  // if not there, add it
       worldBuildings.put(type, new ArrayList<Building>());
-      
     worldBuildings.get(type).add(newBuilding);
+    return newBuilding;
   }
+  return null;
 }
 
 // General constructor
@@ -26,12 +27,19 @@ Building newBuilding(PVector pos, BuildingType type) {
 }
 
 // General methods
-public PVector cornerOffset(PVector position, PVector xySize, boolean top) {
-  PVector result;
-  if (top)
-    result = new PVector(position.x - xySize.x, position.y - xySize.y);
-  else
-    result = new PVector(position.x + xySize.x, position.y + xySize.y);
+public PVector cornerOffset(PVector position, PVector xySize, int corner) {
+  PVector result = new PVector(0, 0);
+  stroke(0); fill(0);
+  switch (corner) {
+    case 0: result = new PVector(position.x - xySize.x, position.y - xySize.y); break;
+    case 1: result = new PVector(position.x + xySize.x, position.y - xySize.y); break;
+    case 2: result = new PVector(position.x - xySize.x, position.y + xySize.y); break;
+    case 3: result = new PVector(position.x + xySize.x, position.y + xySize.y); break;
+    default: println("invalid corner called for cornerOffset");
+   }
+  
+  circle(result.x, result.y, 5);
+   
   return result;
 }
 public PVector randomAim(PVector aim, float spread) {
@@ -42,10 +50,12 @@ public PVector randomAim(PVector aim, float spread) {
 }
 
 public interface Building{ 
-  void tick();    // per frame method
+  void tickFrame();    // per frame method
+  void tickSecond();  // per second method
+  
   void consume(Signal receivedSignal); // take in signal
   void produce(Signal processingSignal); // do something with that signal
-  void emit(Signal s, int count);   // send out signals
+  void emit(Signal s);   // send out signals
   void render(); //draws the building
   
   String getBuildingId();
@@ -78,7 +88,8 @@ public class TestBuilding implements Building {
     testBuildings++;
     // General
     position = pos;
-    collider = gameWorld.createCollider(cornerOffset(pos, xySize, true), cornerOffset(pos, xySize, false), true, this, testBuilding);
+
+    collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, testBuilding);
     
     println("placed " + buildingId);
   }
@@ -86,26 +97,20 @@ public class TestBuilding implements Building {
   // tick update
   float lastPulse = 0;
   float pulseRate = 100;
-  void tick() {
-    render();
-    if ((millis() - lastPulse) >= pulseRate) {
-      lastPulse = millis();
-      emit(null, 15);
-    }
-  }
-  
+  void tickFrame() {render();}
+  void tickSecond() {emit(null);}
   // receive, process, send
   void consume(Signal receivedSignal) {} // does not consume
-  void produce(Signal processingSignal) { } // does not produce
-  void emit(Signal s, int count) {
-    for (int i = 0; i < count; i++) {
-      activeSignals.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, ""));
-    }
+  void produce(Signal processingSignal) {} // does not produce
+  void emit(Signal s) {
+    Signal newSignal = new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, null);
+    activeSignals.add(newSignal.copy());
   }
   
   // rendering
   void render() {
     image(factory, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
+    stroke(0); fill(0); circle(position.x, position.y, 5);
   }
   
   //getters

@@ -1,6 +1,6 @@
 class Signal { // Defines the particles that transfer data 
   // Vars
-  String contents;
+  Resource contents = null;
   Building origin = null;
   ArrayList<BuildingType> targetBuildings = defaultBuildingType;
   
@@ -11,8 +11,8 @@ class Signal { // Defines the particles that transfer data
   float speed = 5f;
   
   // Local shape
-  float radius = 1;
-  color col = color(0, 0, 0);
+  float radius;
+  color col = color(214, 37, 152);
   
   // Local lifetime
   int birthTime = 0;  // Used to calculate the age, milliseconds enlapsed when generated
@@ -20,7 +20,7 @@ class Signal { // Defines the particles that transfer data
   boolean destroy = false;
   
   // Constructors
-  Signal(PVector startPos, PVector startVelo, Building origin, ArrayList<BuildingType> targetBuildings, String data) {   
+  Signal(PVector startPos, PVector startVelo, Building origin, ArrayList<BuildingType> targetBuildings, Resource resource) {   
     position = startPos;
     velocity = startVelo.setMag(speed);
     
@@ -30,7 +30,13 @@ class Signal { // Defines the particles that transfer data
     birthTime = millis();
     maxAge += random(-0.5f, 0.5f); // Some variation to make it feel more natural
     
-    contents = data;
+    contents = resource;
+    if (contents == null)
+      col = color(214, 37, 152);
+    else {
+      PVector colorRGB = resourceSignalColor.get(contents.getType());
+      col = color(colorRGB.x, colorRGB.y, colorRGB.z);
+    }
   }
   Signal(PVector startPos, PVector startVelo) { // Dataless constructor
     position = startPos;
@@ -50,7 +56,7 @@ class Signal { // Defines the particles that transfer data
     /// Collisions
     ArrayList<CollisionData> collisionData = gameWorld.checkCollision(position, radius, origin, targetBuildings);
     for (CollisionData c : collisionData) {
-      if (c.collisionResult) {
+      if (c.collisionResult && !c.invalidCollision) {
         if (c.physicalCollision)
           bounces.add(c.collisionNormal);
         if (c.consumeable) {
@@ -60,8 +66,10 @@ class Signal { // Defines the particles that transfer data
     }
     
     /// Move
-    if (bounces.x != 0 || bounces.y != 0)  // bounce with constant speed
+    if (bounces.x != 0 || bounces.y != 0) { // bounce with constant speed
       velocity = reflect(velocity.copy(), bounces).setMag(speed);
+      origin = null; // origin emit after one bounce2
+    }
     position.add(velocity);
     
     // Rendering
@@ -71,7 +79,7 @@ class Signal { // Defines the particles that transfer data
   
   void render() {
     noStroke();
-    fill(0);
+    fill(col);
     circle(position.x, position.y, radius);
   }
 
@@ -80,7 +88,7 @@ class Signal { // Defines the particles that transfer data
     // gets how old the signal is with 0 being newborn and 1 being expired
     float ageRatio = (millis() - birthTime) / (maxAge * 1000);
     // Sets size based on age
-    radius = lerp(7, 2, ageRatio);
+    radius = lerp(10, 2, ageRatio);
     
     return (ageRatio >= 1);
   }
@@ -90,6 +98,10 @@ class Signal { // Defines the particles that transfer data
     float dot = incoming.dot(normal);
     PVector result = incoming.sub(normal.mult(2*dot)); // r = i - 2(i.n)n
     return result;
+  }
+  
+  void applyForce(PVector force) {
+    velocity.add(force).setMag(speed);
   }
   
   Signal copy(){
