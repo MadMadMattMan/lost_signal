@@ -94,7 +94,6 @@ public class BuildingData {
   Building building;
   BuildingType type;
   String buildingId;
-  BuildingType buildingType;
   Resource storedResources;
   Resource overflowResources;
   
@@ -109,6 +108,14 @@ public class BuildingData {
     this.pos = pos;
     this.xySize = xySize;
     this.buildingId = id;
-    this.buildingType = BuildingType.none;
+  }
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, String id, float prodRate, ResourceType output) {
+    this.building = building;
+    this.type = type;
+    this.pos = pos;
+    this.xySize = xySize;
+    this.buildingId = id;
+    this.productionRate = prodRate;
+    this.selectedOutput = output;
   }
 }

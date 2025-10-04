@@ -19,7 +19,7 @@ class World { // The main class that acts as the game world - contains global va
   // Debugging
   boolean doDebugRendering = true;
   boolean doRenderCells = false;
-  boolean doColliderRendering = true;
+  boolean doColliderRendering = false;
 
 
   // Main working methods

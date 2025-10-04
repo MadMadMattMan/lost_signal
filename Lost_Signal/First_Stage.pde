@@ -12,7 +12,7 @@ public class MineBuilding implements Building {
   
   // Building
   String buildingId;
-  BuildingType type;
+  BuildingType type = BuildingType.mine;
   Resource storedResources;
   Resource overflowResources;
   ArrayList<Signal> toSend = new ArrayList<>();
@@ -22,7 +22,10 @@ public class MineBuilding implements Building {
   boolean renderInfo = false;
   
   // Miner
-  ResourceType selectedOre = ResourceType.iron;
+  ArrayList<ResourceType> availableOres = new ArrayList<>();
+  ResourceType selectedOre;
+  int oreIndex = 0;
+  
   float productionRate = 10; // resources per second - number is max speed
   float placementPenalty = 0.2; // how much of a decline the wrong biome will cause per step (percent)
   float productionPercent = 0;
@@ -40,7 +43,8 @@ public class MineBuilding implements Building {
     position = pos;
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, mineBuilding);
     // Miner
-    selectedOre = randomType();
+    availableOres.add(ResourceType.coal); availableOres.add(ResourceType.iron); availableOres.add(ResourceType.copper);
+    selectedOre = availableOres.get(0);
     storedResources = new Resource(selectedOre, 0); // initialize storage
     float penalty = getBiomePenalty(getNoiseAt(position), "rich ore");
     productionRate *= 1 - (placementPenalty * penalty);   
@@ -53,6 +57,7 @@ public class MineBuilding implements Building {
   
   void tickFrame() { // per frame method
     render();
+    if (renderInfo) infoPanel.render();
     
     for (Signal s : toSend) {
       emit(s);
@@ -89,7 +94,7 @@ public class MineBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId, productionRate, selectedOre);
   }
   Collider getCollider() {return collider;}
   
@@ -100,8 +105,14 @@ public class MineBuilding implements Building {
     
     if (renderInfo) // takes a new snapshot of data
       infoPanel = new InfoPanel(getBuildingData());
+      
+    infoPanel.initialize(renderInfo);
   }
-  void toggleMode() {} // no building mode to toggle
+  void toggleMode() {
+    if ((oreIndex+=1) == (availableOres.size())) oreIndex = 0;
+    selectedOre = availableOres.get(oreIndex);
+    infoPanel.updateInfo(selectedOre);
+  }
 }
 
 

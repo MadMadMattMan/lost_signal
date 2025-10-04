@@ -88,6 +88,10 @@ class InfoPanel {
     }
   }
   
+  void updateInfo(ResourceType newResource) {
+    resource = newResource;
+  }
+  
   public void render() {
     // Panel render
     stroke(0);
@@ -100,6 +104,7 @@ class InfoPanel {
     fill(200, 50, 50);
     rect(destroyButtonPos.x, destroyButtonPos.y, destroyButtonSize, destroyButtonSize);
     image(xIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
+    fill(150, 150, 150);
     rect(toggleButtonPos.x, toggleButtonPos.y, toggleButtonSize, toggleButtonSize);
     image(toggleIcon, (int)(toggleButtonPos.x), (int)(toggleButtonPos.y), (int)destroyButtonSize, (int)toggleButtonSize);
     
@@ -107,12 +112,11 @@ class InfoPanel {
     ////textFont();
     fill(0);
     float yOffset = 0;
-    textSize(yOffset+=15);
-    text(type.toString(), textXOffset, topLeft.y + yOffset);
-    textSize(12);
+    textSize(23);
+    text(type.toString(), textXOffset, topLeft.y + (yOffset+=23));
+    textSize(15);
     if (type!=BuildingType.relay) text(resource.toString(), textXOffset, topLeft.y + (yOffset+=20));
-    
-    text(prodRate, textXOffset, topLeft.y + (yOffset+=14));
+    text(Math.round(prodRate) + "/s", textXOffset, topLeft.y + (yOffset+=14));
   }
 }
 
