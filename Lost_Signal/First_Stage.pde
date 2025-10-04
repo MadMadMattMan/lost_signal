@@ -83,7 +83,7 @@ public class MineBuilding implements Building {
     activeSignals.add(s.copy());
     
   }   // send out signals
-  void render() {image(mine, renderX, renderY, dSize, dSize);} //draws the building
+  void render() {image(mineIcon, renderX, renderY, dSize, dSize);} //draws the building
   
   //getters
   String getBuildingId() {return buildingId;};
@@ -91,6 +91,7 @@ public class MineBuilding implements Building {
   BuildingData getBuildingData() {
      return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
   }
+  Collider getCollider() {return collider;}
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
@@ -100,6 +101,7 @@ public class MineBuilding implements Building {
     if (renderInfo) // takes a new snapshot of data
       infoPanel = new InfoPanel(getBuildingData());
   }
+  void toggleMode() {} // no building mode to toggle
 }
 
 
@@ -161,7 +163,7 @@ public class RelayBuilding implements Building {
   
   // rendering
   void render() {
-    image(relay, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
+    image(relayIcon, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
   }
   
   //getters
@@ -170,6 +172,7 @@ public class RelayBuilding implements Building {
   BuildingData getBuildingData() {
      return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
   }
+  Collider getCollider() {return collider;}
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
@@ -179,4 +182,5 @@ public class RelayBuilding implements Building {
     if (renderInfo) // takes a new snapshot of data
       infoPanel = new InfoPanel(getBuildingData());
   }
+  void toggleMode() {} // no building mode to toggle
 }

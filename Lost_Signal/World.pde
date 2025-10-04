@@ -129,8 +129,20 @@ class World { // The main class that acts as the game world - contains global va
     
     return newCollider;
   }
-
   
+  /// removes a collider from the world
+  void removeCollider(Collider c) {
+    ArrayList<Integer> indecies = c.colliderIndecies;
+    for (int i : indecies)
+      worldColliders.get(i).remove(c);
+  }
+  
+  /// removes a building from the world
+  void removeBuilding(BuildingType t, Building b) {
+    removeCollider(b.getCollider());
+    worldBuildings.get(t).remove(b);
+  }
+
   // Rendering Methods
   /// debug render method for drawing world colliders
   void renderColliders() {

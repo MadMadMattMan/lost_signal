@@ -31,7 +31,7 @@ class Collider {
     // Calculate which cells this collider intersects
     calculateInterceptingIndexes();
   }
-  // infoPanel constructor
+  // infoPanel button constructor
   Collider(PVector topLeft, PVector bottomRight, Button button) {
      // Sort and store x and y bounds
     xPoints = new PVector(min(topLeft.x, bottomRight.x), max(topLeft.x, bottomRight.x));
@@ -48,6 +48,9 @@ class Collider {
     if (isBetween(xPoints, otherPosition.x, radius) &&
         isBetween(yPoints, otherPosition.y, radius) &&
         !isOrigin(origin)) {
+      if (button != null) {
+        return new CollisionData(button); 
+      }   
       if (targetMatch(target) && building != null){ // if matching and not a obstructor - do full collision
         return new CollisionData(isPhysicalCollider, collisionNormal(otherPosition), building);
       }

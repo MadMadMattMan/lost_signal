@@ -34,6 +34,23 @@ public class CollisionData{
      invalidCollision = invalid;
    }
    
+   String ToString() {
+     String str = "";
+     str+=collisionResult;
+     str+="; ";
+     str+=invalidCollision;
+     str+="; ";
+     str+=physicalCollision;
+     str+="; ";
+     str+=collisionNormal;
+     str+="; ";
+     str+=consumeable;
+     str+="; ";
+     str+=building;
+     str+="; ";
+     str+=button;
+     return str;
+   }
 }
 
 public class Button {
@@ -81,10 +98,10 @@ public class BuildingData {
   Resource storedResources;
   Resource overflowResources;
   
-  // Miner
-  ResourceType selectedOre = ResourceType.iron;
-  float productionRate; // resources per second - number is max speed
-  float productionPercent;
+  // General output
+  ResourceType selectedOutput = ResourceType.none;
+  float productionRate = 0; // resources per second - number is max speed
+  float productionPercent = 0;
   
   BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, String id) { // generic constructor
     this.building = building;

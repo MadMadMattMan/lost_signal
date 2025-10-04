@@ -7,6 +7,7 @@ public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<
 public static World gameWorld; // stores and deals with the environment data
 public static ArrayList<Signal> activeSignals = new ArrayList<>(); // List storing every signal
 public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new HashMap<>(); // Map storing every building mapped to to their type
+public static ArrayList<InfoPanel> openPanels = new ArrayList<>(); // List with every open panel
 
 public static BuildingType buildMode = BuildingType.none; // current build target
 
@@ -16,7 +17,6 @@ public static float globalInterference = 0;
 
 // Called every frame
 float lastPulse = 0;
-float pulseRate = 5*1000;
 
 void draw() {
   //Resets scene
@@ -43,7 +43,8 @@ void draw() {
 void setup() {
   // Processing setup
   //fullScreen();
-  size(1980, 1080);
+  //size(1980, 1080);
+  size(1000, 500);
   frameRate(60);
   background(255);
   text("Generating Map", 0, 0, width, height);

@@ -64,10 +64,12 @@ public interface Building{
   String getBuildingId();
   PVector getBuildingPosition();
   BuildingData getBuildingData();
+  Collider getCollider();
   
   // setters
   void setAim(PVector newAim);
   void toggleInfo();
+  void toggleMode();
 }
 
 int testBuildings = 0;
@@ -97,6 +99,7 @@ public class TestBuilding implements Building {
   TestBuilding(PVector pos) {
     buildingId = ("Test " + testBuildings);
     testBuildings++;
+    type = BuildingType.test;
     // General
     position = pos;
 
@@ -121,7 +124,7 @@ public class TestBuilding implements Building {
   
   // rendering
   void render() {
-    image(factory, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
+    image(factoryIcon, (int)(position.x - xySize.x), (int)(position.y - xySize.y), (int)xySize.x*2, (int)xySize.y*2);
     stroke(0); fill(0); circle(position.x, position.y, 5);
   }
   
@@ -131,6 +134,7 @@ public class TestBuilding implements Building {
   BuildingData getBuildingData() {
      return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
   }
+  Collider getCollider() {return collider;}
   
   //setters
   void setAim(PVector newAim) {target = newAim;}
@@ -139,5 +143,7 @@ public class TestBuilding implements Building {
     
     if (renderInfo) // takes a new snapshot of data
       infoPanel = new InfoPanel(getBuildingData());
+    infoPanel.initialize(renderInfo);
   }
+  void toggleMode() {} // no building mode to toggle
 }

@@ -1,53 +1,90 @@
 // Image gathering
-PImage mine, relay, factory;
+PImage mineIcon, relayIcon, factoryIcon;
+PImage xIcon, toggleIcon;
 void collectImages() {
-  mine = loadImage("assets/buildings/mine.png"); 
-  relay = loadImage("assets/buildings/relay.png"); 
-  factory = loadImage("assets/buildings/factory.png"); 
+  mineIcon = loadImage("assets/buildings/mine.png"); 
+  relayIcon = loadImage("assets/buildings/relay.png"); 
+  factoryIcon = loadImage("assets/buildings/factory.png"); 
+  
+  xIcon = loadImage("assets/ui/x.png");
+  toggleIcon = loadImage("assets/ui/toggle.png");
 }
 
 // Building info screen
 class InfoPanel {
   HashMap<ButtonAction, Button> buttons = new HashMap<>();
   ArrayList<Collider> colliders = new ArrayList<>();
+  
   PVector destroyButtonPos, destroyButtonAlt;
+  int destroyButtonSize = 20;
+  PVector toggleButtonPos, toggleButtonAlt;
+  int toggleButtonSize = 20;
+  
   Building building;
   BuildingType type;
+  boolean gatherer = false, relay = false;
+  ResourceType resource;
+  float prodRate;
   
   PVector topLeft = new PVector();
   PVector bottomRight;
   PVector xySize = new PVector(60, 100);
   int offset = 5;
-  int destroyButtonSize = 20;
+  
+  
+  float textXOffset;
   
   InfoPanel(BuildingData bData) {
     this.building = bData.building;
     this.type = bData.type;
+    
     PVector buildingPos = bData.pos;
     PVector buildingSize = bData.xySize;
+    
+    this.resource = bData.selectedOutput;
+    this.prodRate = bData.productionRate;
+    
     topLeft.x = buildingPos.x - buildingSize.x - xySize.x - offset;
     topLeft.y = buildingPos.y + buildingSize.y - xySize.y;
     bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
     
     buttons.put(ButtonAction.destroy, new Button(this, ButtonAction.destroy));
+    buttons.put(ButtonAction.toggle, new Button(this, ButtonAction.toggle));
+    
     destroyButtonPos = new PVector(bottomRight.x - destroyButtonSize, bottomRight.y - destroyButtonSize);
     destroyButtonAlt = bottomRight.copy();
+    toggleButtonPos = new PVector(topLeft.x, bottomRight.y - toggleButtonSize);
+    toggleButtonAlt = new PVector(topLeft.x + toggleButtonSize, bottomRight.y);
+    
+    textXOffset = topLeft.x + 2;
+  }
+  /**
+  void relayPanel(BuildingData bData) {
+    this.resource = bData.selectedOutput;
+  } */
+  void gathererPanel(BuildingData bData) {
+    this.resource = bData.selectedOutput;
+    this.prodRate = bData.productionRate;
   }
   
   public void clickEvent(ButtonAction action) {
-    println("Received click for button " + action);
     switch (action) {
-      case destroy: worldBuildings.get(type).remove(building); break;
+      case destroy: initialize(false); gameWorld.removeBuilding(type, building); break;
+      case toggle: building.toggleMode(); break;
       default: println("unknown InfoPanel button press");
     }
   }
   
   void initialize(boolean state) {
     if (state) { // setup
-      gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.destroy)); 
+      colliders.add(gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.destroy))); 
+      colliders.add(gameWorld.createCollider(toggleButtonPos.copy(), toggleButtonAlt.copy(), buttons.get(ButtonAction.toggle))); 
     }
     else { // destroy
-      
+      for (Collider c : colliders) {
+        gameWorld.removeCollider(c);
+      }
+      colliders.clear();
     }
   }
   
@@ -62,9 +99,20 @@ class InfoPanel {
     // Destroy render
     fill(200, 50, 50);
     rect(destroyButtonPos.x, destroyButtonPos.y, destroyButtonSize, destroyButtonSize);
-    
+    image(xIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
+    rect(toggleButtonPos.x, toggleButtonPos.y, toggleButtonSize, toggleButtonSize);
+    image(toggleIcon, (int)(toggleButtonPos.x), (int)(toggleButtonPos.y), (int)destroyButtonSize, (int)toggleButtonSize);
     
     //Text render
+    ////textFont();
+    fill(0);
+    float yOffset = 0;
+    textSize(yOffset+=15);
+    text(type.toString(), textXOffset, topLeft.y + yOffset);
+    textSize(12);
+    if (type!=BuildingType.relay) text(resource.toString(), textXOffset, topLeft.y + (yOffset+=20));
+    
+    text(prodRate, textXOffset, topLeft.y + (yOffset+=14));
   }
 }
 

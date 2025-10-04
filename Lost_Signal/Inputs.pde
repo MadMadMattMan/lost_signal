@@ -73,7 +73,6 @@ void mouseReleased() {
   if (mouseButton == LEFT) { // released left
     lmDown = false;
     if (releaseButton != null) {
-      println("releaseButton!=null");
       releaseButton.click(); 
     }
     else if (validPlacement) { // validPlacement set if holding, so if building hold is released
