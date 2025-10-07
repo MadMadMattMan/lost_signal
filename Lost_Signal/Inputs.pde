@@ -35,7 +35,7 @@ void updateMouse() {
   
   if (rmDown) { // right mouse is held down
     holdTime = millis() - startHoldTime;
-    if (clickBuilding != null && holdTime > 200) { // right mouse is being held on a building & has held for more than .2s
+    if (clickBuilding != null && holdTime > 50) { // right mouse is being held on a building & has held for more than .05s
       stroke(0,0, 255);
       strokeWeight(5);
       PVector startPos = clickBuilding.getBuildingPosition();
@@ -48,17 +48,9 @@ void updateMouse() {
   }
   if (lmDown) { // left mouse is held down
     holdTime = millis() - startHoldTime;
-    if (buildMode != BuildingType.none && holdTime > 200) { // building is selected for placing
+    if (buildMode != BuildingType.none && holdTime > 50) { // building is selected for placing
       validPlacement = checkPlacement(new PVector(holdLocation.x, holdLocation.y), new PVector(25,25));
-      if (validPlacement)
-        stroke(0, 255, 0);
-      else
-        stroke(255, 0, 0);
-        
-      noFill();
-      rectMode(CENTER);
-      square(holdLocation.x, holdLocation.y, 50); // outline
-      circle(holdLocation.x, holdLocation.y, 10); // resource pickup
+      placingGraphic();
     }
   }
 }
@@ -85,10 +77,10 @@ void mouseReleased() {
     }
   }
 
-
   if (mouseButton == RIGHT) {
     rmDown = false; 
     if (clickBuilding != null) {
+      if (aimDir.x == 0 && aimDir.y == 0) {aimDir = new PVector(1, 0);}
       clickBuilding.setAim(aimDir.copy()); 
     }
   }
@@ -105,6 +97,10 @@ void keyPressed() {
      buildMode = BuildingType.relay;
    else if (key == '3')
      buildMode = BuildingType.mine;
+   else if (key == '4')
+     buildMode = BuildingType.lumber;
+   else if (key == '5')
+     buildMode = BuildingType.storage;
    else 
      buildMode = BuildingType.none; 
    
@@ -133,7 +129,26 @@ Building clickBuilding(PVector location) {
   return null;
 }
 
-
+void placingGraphic() {
+  color uiColor;
+  if (validPlacement) 
+    uiColor = color(0, 255, 0);    
+  else 
+    uiColor = color(255, 0, 0);
+  
+  stroke(uiColor);
+  strokeWeight(2);
+  noFill();
+  rectMode(CENTER);
+  square(holdLocation.x, holdLocation.y, 50); // outline
+  circle(holdLocation.x, holdLocation.y, 10); // resource pickup
+  fill(uiColor);
+  textSize(20);
+  textAlign(CENTER);
+  text("Placing " + buildMode.toString(), holdLocation.x, holdLocation.y - 30);
+  text("Cost $0", holdLocation.x, holdLocation.y + 50);
+  }
+  
 boolean checkPlacement(PVector location, PVector size) {
   // check all corner collisions
   ArrayList<CollisionData> collisions = new ArrayList<>();

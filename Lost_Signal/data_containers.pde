@@ -96,26 +96,49 @@ public class BuildingData {
   String buildingId;
   Resource storedResources;
   Resource overflowResources;
+  float cost;
   
   // General output
   ResourceType selectedOutput = ResourceType.none;
   float productionRate = 0; // resources per second - number is max speed
   float productionPercent = 0;
   
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, String id) { // generic constructor
+  // Relay
+  boolean aimMode;
+  
+  // Storage
+  HashMap<ResourceType, Float> storage;
+  
+  // generic constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize) { 
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
-    this.buildingId = id;
   }
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, String id, float prodRate, ResourceType output) {
+  // producer constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float prodRate, ResourceType output) { 
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
-    this.buildingId = id;
     this.productionRate = prodRate;
     this.selectedOutput = output;
+  }
+  // relay constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, boolean aimMode ) {
+    this.building = building;
+    this.type = type;
+    this.pos = pos;
+    this.xySize = xySize;
+    this.aimMode = aimMode;
+  }
+  // storage constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, HashMap<ResourceType, Float> storage) {
+    this.building = building;
+    this.type = type;
+    this.pos = pos;
+    this.xySize = xySize;
+    this.storage = storage;
   }
 }

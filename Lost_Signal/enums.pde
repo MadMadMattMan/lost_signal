@@ -7,25 +7,13 @@ public enum BuildingType {
   
   // first stage
   mine,
+  lumber,
   relay,
+  storage,
   
-  // mid 1 stage
-  
-  // mid 2 stage
   
   // end stage
   /// export
-}
-public ResourceType randomType() {
-  int rand = int(random(3)); 
-  switch (rand) {
-    case 1:
-      return ResourceType.iron;
-    case 2:
-      return ResourceType.copper;
-    default:
-      return ResourceType.coal;
-  }
 }
 
 // enum for info panel actions
@@ -43,11 +31,14 @@ public enum ResourceType {
   coal, // material, fuel
   iron, // material
   copper, // material
+  /// lumber
+  wood,
+  
   
   // 2
-  steel, // coal + iron
+  steel, // coal|wood + iron
   electromagnet, // iron + copper
-  thermoConductor, // coal + copper
+  thermoConductor, // coal|wood + copper
   
   // 3
   pulseCore, // steel + electromagnet
@@ -64,4 +55,6 @@ static {
   resourceSignalColor.put(ResourceType.coal, new PVector(0, 0, 0));
   resourceSignalColor.put(ResourceType.iron, new PVector(165, 156, 148));
   resourceSignalColor.put(ResourceType.copper, new PVector(203, 96, 21));
+  
+  resourceSignalColor.put(ResourceType.wood, new PVector(150, 60, 0));
 }

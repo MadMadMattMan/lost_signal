@@ -1,7 +1,7 @@
 // global variables
 /// constants
 public static final float fixedDeltaTime = 0.1f;
-public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<>() {{add(BuildingType.test); add(BuildingType.mine); add(BuildingType.relay);}};
+public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<>() {{add(BuildingType.test); add(BuildingType.mine); add(BuildingType.relay); add(BuildingType.lumber); add(BuildingType.storage);}};
 
 /// tracking
 public static World gameWorld; // stores and deals with the environment data
@@ -14,6 +14,7 @@ public static BuildingType buildMode = BuildingType.none; // current build targe
 
 /// Interference
 public static float globalInterference = 0;
+public static float globalMoney = 0;
 
 // Called every frame
 float lastPulse = 0;
@@ -30,7 +31,8 @@ void draw() {
   
   updateMouse();
   
-  globalInterference = activeSignals.size()/100;
+  globalInterference = activeSignals.size()/7.5f;
+  renderUI();
   
   //one second update
   if ((millis() - lastPulse) >= 1000) {
@@ -43,8 +45,8 @@ void draw() {
 void setup() {
   // Processing setup
   //fullScreen();
-  //size(1980, 1080);
-  size(1000, 500);
+  size(1980, 1080);
+  //size(1000, 500);
   frameRate(60);
   background(255);
   text("Generating Map", 0, 0, width, height);
@@ -65,9 +67,10 @@ void newGame() {
   initializeGround();
   
   // Testing setup
+  /**
   for (int i = 0; i < 500; i++) {
     activeSignals.add(new Signal(new PVector(width/2, height/2), new PVector(random(-1f, 1f), random(-1f, 1f))));
-  }
+  }*/
   
   
 }

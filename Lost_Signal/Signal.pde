@@ -70,7 +70,7 @@ class Signal { // Defines the particles that transfer data
       velocity = reflect(velocity.copy(), bounces).setMag(speed);
       origin = null; // origin emit after one bounce2
     }
-    position.add(velocity);
+    position.add(velocity.setMag(speed));
     
     // Rendering
     render();
@@ -101,7 +101,8 @@ class Signal { // Defines the particles that transfer data
   }
   
   void applyForce(PVector force) {
-    velocity.add(force).setMag(speed);
+    velocity.add(force);
+    velocity.setMag(speed);
   }
   
   Signal copy(){

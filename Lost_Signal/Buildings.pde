@@ -1,6 +1,8 @@
 public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() {{add(BuildingType.test);}};
-public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}};
+public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}}; //<>//
+public static final ArrayList<BuildingType> lumberBuilding = new ArrayList<>() {{add(BuildingType.lumber);}};
 public static final ArrayList<BuildingType> relayBuilding = new ArrayList<>() {{add(BuildingType.relay);}};
+public static final ArrayList<BuildingType> storageBuilding = new ArrayList<>() {{add(BuildingType.storage);}};
 
 // Building Methods
 Building addBuilding(PVector position, BuildingType type) {
@@ -19,8 +21,10 @@ Building newBuilding(PVector pos, BuildingType type) {
   // Type specific
   switch (type) {
     case test: return new TestBuilding(pos);
-    case mine: return new MineBuilding(pos);
+    case mine: return new GathererBuilding(pos, type);
+    case lumber: return new GathererBuilding(pos, type);
     case relay: return new RelayBuilding(pos);
+    case storage: return new StorageBuilding(pos);
     // case export:
     default: return null;
   }
@@ -132,7 +136,7 @@ public class TestBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+     return new BuildingData(this, type, position.copy(), xySize.copy());
   }
   Collider getCollider() {return collider;}
   

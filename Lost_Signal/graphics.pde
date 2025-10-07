@@ -1,10 +1,12 @@
 // Image gathering
-PImage mineIcon, relayIcon, factoryIcon;
+PImage mineIcon, relayIcon, factoryIcon, lumberIcon, storageIcon;
 PImage xIcon, toggleIcon;
 void collectImages() {
   mineIcon = loadImage("assets/buildings/mine.png"); 
   relayIcon = loadImage("assets/buildings/relay.png"); 
   factoryIcon = loadImage("assets/buildings/factory.png"); 
+  lumberIcon = loadImage("assets/buildings/lumber.png"); 
+  storageIcon = loadImage("assets/buildings/storage.png"); 
   
   xIcon = loadImage("assets/ui/x.png");
   toggleIcon = loadImage("assets/ui/toggle.png");
@@ -25,14 +27,18 @@ class InfoPanel {
   boolean gatherer = false, relay = false;
   ResourceType resource;
   float prodRate;
+  boolean aimMode;
+  HashMap<ResourceType, Float> storage;
   
+  PVector center = new PVector();
   PVector topLeft = new PVector();
   PVector bottomRight;
   PVector xySize = new PVector(60, 100);
   int offset = 5;
   
-  
   float textXOffset;
+  String titleText;
+  float titleSize;
   
   InfoPanel(BuildingData bData) {
     this.building = bData.building;
@@ -43,10 +49,13 @@ class InfoPanel {
     
     this.resource = bData.selectedOutput;
     this.prodRate = bData.productionRate;
+    this.aimMode = bData.aimMode;
+    this.storage = bData.storage;
     
     topLeft.x = buildingPos.x - buildingSize.x - xySize.x - offset;
     topLeft.y = buildingPos.y + buildingSize.y - xySize.y;
     bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
+    center = new PVector(topLeft.x + xySize.x/2, topLeft.y + xySize.y/2);
     
     buttons.put(ButtonAction.destroy, new Button(this, ButtonAction.destroy));
     buttons.put(ButtonAction.toggle, new Button(this, ButtonAction.toggle));
@@ -57,11 +66,25 @@ class InfoPanel {
     toggleButtonAlt = new PVector(topLeft.x + toggleButtonSize, bottomRight.y);
     
     textXOffset = topLeft.x + 2;
+    titleText = type.toString();
+    
+    textSize(25); // Start with a base size
+    float baseSize = 25;
+    float maxWidth = xySize.x - 10; // Add some padding
+    float actualWidth = textWidth(titleText);
+    
+    // Scale down if needed
+    if (actualWidth > maxWidth) {
+      titleSize = baseSize * (maxWidth / actualWidth);
+    } 
+    else
+      titleSize = baseSize;
   }
-  /**
+ 
+ /**
   void relayPanel(BuildingData bData) {
-    this.resource = bData.selectedOutput;
-  } */
+    //toggle aim
+  }*/
   void gathererPanel(BuildingData bData) {
     this.resource = bData.selectedOutput;
     this.prodRate = bData.productionRate;
@@ -91,6 +114,9 @@ class InfoPanel {
   void updateInfo(ResourceType newResource) {
     resource = newResource;
   }
+  void updateInfo(boolean aimMode) {
+    this.aimMode = aimMode; 
+  }
   
   public void render() {
     // Panel render
@@ -109,15 +135,39 @@ class InfoPanel {
     image(toggleIcon, (int)(toggleButtonPos.x), (int)(toggleButtonPos.y), (int)destroyButtonSize, (int)toggleButtonSize);
     
     //Text render
-    ////textFont();
     fill(0);
-    float yOffset = 0;
-    textSize(23);
-    text(type.toString(), textXOffset, topLeft.y + (yOffset+=23));
-    textSize(15);
-    if (type!=BuildingType.relay) text(resource.toString(), textXOffset, topLeft.y + (yOffset+=20));
-    text(Math.round(prodRate) + "/s", textXOffset, topLeft.y + (yOffset+=14));
+    float yOffset = titleSize;
+    textSize(titleSize);
+    textAlign(CENTER);
+    text(titleText, center.x, topLeft.y + yOffset);
+    textSize(13);
+    textAlign(LEFT);
+    if (type == BuildingType.relay) {
+      text("Aiming: ", textXOffset, topLeft.y + (yOffset+=15));
+      text(""+aimMode, textXOffset, topLeft.y + (yOffset+=13));
+    }
+    else if (type == BuildingType.storage) {
+      text("Stored: ", textXOffset, topLeft.y + (yOffset+=15));
+      if (storage.keySet().size() < 1)
+        text("Empty", textXOffset, topLeft.y + (yOffset+=13));
+      else {
+        for (ResourceType resource : storage.keySet()) {
+          text(storage.get(resource), textXOffset, topLeft.y + (yOffset+=13));
+        }
+      }
+    }
+    else {
+      text(resource.toString() + ": " + Math.round(prodRate) + "/s", textXOffset, topLeft.y + (yOffset+=15));
+    }
   }
+}
+
+void renderUI() {
+  textSize(30);
+  textAlign(LEFT);
+  fill(0);
+  text("Interference " + globalInterference, 5, 35);
+  text("Money $" + globalMoney, 5, 65);
 }
 
 

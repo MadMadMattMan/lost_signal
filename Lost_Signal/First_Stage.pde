@@ -1,6 +1,9 @@
-/**                                                                  mine building                                                 */
 int mineBuildings = 0;
-public class MineBuilding implements Building {
+int lumberBuildings = 0;
+int relayBuidlings = 0;
+int storageBuildings = 0;
+/**                                                                  gatherer building                                                 */
+public class GathererBuilding implements Building {
   // Buliding data
   /// positional
   PVector position; // space in 2d
@@ -12,19 +15,19 @@ public class MineBuilding implements Building {
   
   // Building
   String buildingId;
-  BuildingType type = BuildingType.mine;
-  Resource storedResources;
-  Resource overflowResources;
+  BuildingType type;
   ArrayList<Signal> toSend = new ArrayList<>();
+  PImage icon;
   
   // Info Rendering
   InfoPanel infoPanel;
   boolean renderInfo = false;
   
   // Miner
-  ArrayList<ResourceType> availableOres = new ArrayList<>();
-  ResourceType selectedOre;
-  int oreIndex = 0;
+  ArrayList<ResourceType> availableResources = new ArrayList<>();
+  ResourceType selectedResource;
+  Resource storedResources;
+  int resourceIndex = 0;
   
   float productionRate = 10; // resources per second - number is max speed
   float placementPenalty = 0.2; // how much of a decline the wrong biome will cause per step (percent)
@@ -35,19 +38,31 @@ public class MineBuilding implements Building {
   // Rendering
   int renderX, renderY, dSize;
   
-  MineBuilding(PVector pos) {
-    // Id
-    buildingId = ("Mine " + mineBuildings);
-    mineBuildings++;
-    // General
+  GathererBuilding(PVector pos, BuildingType type) {
     position = pos;
-    collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, mineBuilding);
-    // Miner
-    availableOres.add(ResourceType.coal); availableOres.add(ResourceType.iron); availableOres.add(ResourceType.copper);
-    selectedOre = availableOres.get(0);
-    storedResources = new Resource(selectedOre, 0); // initialize storage
-    float penalty = getBiomePenalty(getNoiseAt(position), "rich ore");
-    productionRate *= 1 - (placementPenalty * penalty);   
+    this.type = type;
+    
+    
+    if (type == BuildingType.mine) {
+      mineBuildings++;
+      icon = mineIcon;
+      buildingId = (type.toString() + ":" + mineBuildings);
+      collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, mineBuilding);
+      availableResources.add(ResourceType.coal); availableResources.add(ResourceType.iron); availableResources.add(ResourceType.copper);
+      float penalty = getBiomePenalty(getNoiseAt(position), "rich ore");
+      productionRate *= 1 - (placementPenalty * penalty); 
+    }
+     if (type == BuildingType.lumber) {
+      lumberBuildings++;
+      icon = lumberIcon;
+      buildingId = (type.toString() + ":" + lumberBuildings);
+      collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, lumberBuilding);
+      availableResources.add(ResourceType.wood);
+      float penalty = getBiomePenalty(getNoiseAt(position), "rich forest");
+      productionRate *= 1 - (placementPenalty * penalty); 
+     }
+    selectedResource = availableResources.get(0);
+    storedResources = new Resource(selectedResource, 0); // initialize storage
     
     // render
     renderX = (int)(position.x - xySize.x);
@@ -73,13 +88,13 @@ public class MineBuilding implements Building {
     productionPercent-=newResources;
     storedResources.increase(newResources);
     
-    int sendableResources = floor(storedResources.getAmount());
+    int sendableResources = floor(storedResources.getAmount()/5)*5;
     if (sendableResources >= 5) {
-      storedResources.reset();      
+      storedResources.increase(-sendableResources);
       int waves = ceil(sendableResources/5);
       float perSignal = sendableResources/waves;
       for (int i = 0; i < waves * 5; i++) {
-        toSend.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, new Resource(selectedOre, perSignal)));   
+        toSend.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, new Resource(selectedResource, perSignal/5)));   
       }
     }
   }
@@ -88,13 +103,13 @@ public class MineBuilding implements Building {
     activeSignals.add(s.copy());
     
   }   // send out signals
-  void render() {image(mineIcon, renderX, renderY, dSize, dSize);} //draws the building
+  void render() {image(icon, renderX, renderY, dSize, dSize);} //draws the building
   
   //getters
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId, productionRate, selectedOre);
+     return new BuildingData(this, type, position.copy(), xySize.copy(), productionRate, selectedResource);
   }
   Collider getCollider() {return collider;}
   
@@ -109,13 +124,11 @@ public class MineBuilding implements Building {
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {
-    if ((oreIndex+=1) == (availableOres.size())) oreIndex = 0;
-    selectedOre = availableOres.get(oreIndex);
-    infoPanel.updateInfo(selectedOre);
+    if ((resourceIndex+=1) == (availableResources.size())) resourceIndex = 0;
+    selectedResource = availableResources.get(resourceIndex);
+    infoPanel.updateInfo(selectedResource);
   }
 }
-
-
 
 /**                                                                  relay building                                                 */
 int relayBuildings = 0;
@@ -128,10 +141,11 @@ public class RelayBuilding implements Building {
   /// targeting
   float spread = PI/256;   // the degree of spread
   PVector target = null; // no target until set
+  PVector pastTarget = new PVector(1, 0);
   
   // Building
   String buildingId;
-  BuildingType type;
+  BuildingType type = BuildingType.relay;
   ArrayList<Resource> storedResources = new ArrayList<>();
   ArrayList<Signal> toSend = new ArrayList<>();
   
@@ -152,6 +166,7 @@ public class RelayBuilding implements Building {
   
   void tickFrame() {
     render();
+    if (renderInfo) infoPanel.render();
     for (Signal s : toSend)
       emit(s);
     toSend.clear();
@@ -181,7 +196,109 @@ public class RelayBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), buildingId);
+     return new BuildingData(this, type, position.copy(), xySize.copy(), (target!=null));
+  }
+  Collider getCollider() {return collider;}
+  
+  //setter
+  void setAim(PVector newAim) {target = newAim; if (infoPanel!=null) infoPanel.updateInfo(target!=null);}
+  void toggleInfo() {
+    renderInfo = !renderInfo; // toggle bool
+    
+    if (renderInfo) // takes a new snapshot of data
+      infoPanel = new InfoPanel(getBuildingData());
+      
+    infoPanel.initialize(renderInfo);
+  }
+  void toggleMode() {
+    if (target != null) {
+      pastTarget = target;
+      target = null;
+    }
+    else 
+      target = pastTarget;
+      
+    infoPanel.updateInfo(target!=null);
+  } // no building mode to toggle
+}
+
+/**                                                                  storage building                                                 */
+public class StorageBuilding implements Building {
+  // Buliding data
+  /// positional
+  PVector position; // space in 2d
+  PVector xySize = new PVector(25, 25); // x size, y size
+  
+  /// targeting
+  double spread = PI/256;   // the degree of spread
+  PVector target = new PVector(1, 0).normalize(); // target direction - normalized
+  
+  // Building
+  String buildingId;
+  BuildingType type = BuildingType.storage;
+  ArrayList<Signal> toSend = new ArrayList<>();
+  
+  // Info Rendering
+  InfoPanel infoPanel;
+  boolean renderInfo = false;
+
+  // Storage
+  HashMap<ResourceType, Float> storage = new HashMap<>(); 
+  
+  Collider collider;
+  
+  // Rendering
+  int renderX, renderY, dSize;
+  
+  StorageBuilding(PVector pos) {
+    position = pos;
+    storageBuildings++;
+    buildingId = (type.toString() + ":" + storageBuildings);
+    collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, storageBuilding);
+    
+    // render
+    renderX = (int)(position.x - xySize.x);
+    renderY = (int)(position.y - xySize.y);
+    dSize = (int)(xySize.x * 2);
+  }
+  
+  void tickFrame() { // per frame method
+    render();
+    if (renderInfo) infoPanel.render();
+    
+    for (Signal s : toSend) {
+      emit(s);
+    }  
+    toSend.clear();
+  }    
+  void tickSecond() {}
+  void consume(Signal receivedSignal) {  // take in signal
+    Resource intake = receivedSignal.contents;
+    if (intake != null) {
+      ResourceType type = intake.getType();
+      float pastAmount = 0;
+       if (storage.keySet().contains(type)) {
+          pastAmount = storage.get(type);
+         storage.remove(type);
+       }
+         
+       storage.put(type, (pastAmount + intake.getAmount()));
+    }
+    receivedSignal.destroy = true;
+  }
+  void produce(Signal processingSignal) {} // nothing to produce
+  
+  void emit(Signal s) {  
+    activeSignals.add(s.copy());
+    
+  }   // send out signals
+  void render() {image(storageIcon, renderX, renderY, dSize, dSize);} //draws the building
+  
+  //getters
+  String getBuildingId() {return buildingId;};
+  PVector getBuildingPosition() {return position.copy();}
+  BuildingData getBuildingData() {
+     return new BuildingData(this, type, position.copy(), xySize.copy(), storage);
   }
   Collider getCollider() {return collider;}
   
@@ -192,6 +309,8 @@ public class RelayBuilding implements Building {
     
     if (renderInfo) // takes a new snapshot of data
       infoPanel = new InfoPanel(getBuildingData());
+      
+    infoPanel.initialize(renderInfo);
   }
-  void toggleMode() {} // no building mode to toggle
+  void toggleMode() {}
 }
