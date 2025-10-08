@@ -1,12 +1,5 @@
 /**
-Finish mine
-Relay targeting modes/aim
-
-UI for buildmode
-Builing data UI
-
-
-
-
-
+  Formatting bank info
+  pause menu 2/ reset
+  tutorial page and start game
 */

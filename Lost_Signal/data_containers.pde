@@ -54,16 +54,26 @@ public class CollisionData{
 }
 
 public class Button {
-  public InfoPanel parentPanel;
+  public InfoPanel infoPanel;
+  public UIPanel UIPanel;
+  
   public ButtonAction type;
   
+  
   Button(InfoPanel panel, ButtonAction type) {
-    this.parentPanel = panel;
+    this.infoPanel = panel;
+    this.type = type;
+  }
+  Button(UIPanel panel, ButtonAction type) {
+    this.UIPanel = panel;
     this.type = type;
   }
   
   public void click() {
-    parentPanel.clickEvent(type); 
+    if (infoPanel != null)
+      infoPanel.clickEvent(type);
+    else
+      UIPanel.clickEvent(type);
   }
 }
 
@@ -109,6 +119,13 @@ public class BuildingData {
   // Storage
   HashMap<ResourceType, Float> storage;
   
+  // Factory
+  ResourceType input1;
+  float input1Count;
+  ResourceType input2;
+  float input2Count;
+  float fuelValue;
+  
   // generic constructor
   BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice) { 
     this.building = building;
@@ -151,5 +168,18 @@ public class BuildingData {
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
+  }
+  // factory constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice, float fuelVal, ResourceType input1, float count1, ResourceType input2, float count2) { 
+    this.building = building;
+    this.type = type;
+    this.pos = pos;
+    this.xySize = xySize;
+    this.sellPrice = sellPrice;
+    this.input1 = input1;
+    this.input1Count = count1;
+    this.input2 = input2;
+    this.input2Count = count2;
+    this.fuelValue = fuelVal;
   }
 }

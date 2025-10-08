@@ -85,9 +85,9 @@ public class GathererBuilding implements Building {
     }  
     toSend.clear();
   }    
-  void tickSecond() {produce(null);} // produce called once per second
+  void tickSecond() {produce();} // produce called once per second
   void consume(Signal receivedSignal) {} // take in signal
-  void produce(Signal processingSignal) {
+  void produce() {
     productionPercent += productionRate;
     
     int newResources = floor(productionPercent);
@@ -107,7 +107,6 @@ public class GathererBuilding implements Building {
   
   void emit(Signal s) {  
     activeSignals.add(s.copy());
-    
   }   // send out signals
   void render() {image(icon, renderX, renderY, dSize, dSize);} //draws the building
   
@@ -136,6 +135,7 @@ public class GathererBuilding implements Building {
     productionRate = productionLimit * resourceSpeed.get(selectedResource);
     infoPanel.updateInfo(selectedResource, productionRate);
   }
+  void setResource(ResourceType input1, ResourceType input2) {}
 }
 
 /**                                                                  relay building                                                 */
@@ -192,7 +192,7 @@ public class RelayBuilding implements Building {
       newSignal.applyForce(target.copy().setMag(10));
     toSend.add(newSignal);
   } 
-  void produce(Signal processingSignal) { }
+  void produce() { }
   void emit(Signal signal) {
     activeSignals.add(signal);
     signal.origin = null;
@@ -231,7 +231,8 @@ public class RelayBuilding implements Building {
       target = pastTarget;
       
     infoPanel.updateInfo(target!=null);
-  } // no building mode to toggle
+  }
+  void setResource(ResourceType input1, ResourceType input2) {}
 }
 
 /**                                                                  storage building                                                 */
@@ -300,7 +301,7 @@ public class StorageBuilding implements Building {
     }
     receivedSignal.destroy = true;
   }
-  void produce(Signal processingSignal) {} // nothing to produce
+  void produce() {} // nothing to produce
   
   void emit(Signal s) {  
     activeSignals.add(s.copy());
@@ -342,4 +343,5 @@ public class StorageBuilding implements Building {
     }
     storage.clear();
   }
+  void setResource(ResourceType input1, ResourceType input2) {}
 }

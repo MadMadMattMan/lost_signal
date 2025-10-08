@@ -10,6 +10,7 @@ public class FactoryBuilding implements Building {
   String buildingId;
   BuildingType type = BuildingType.factory;
   Collider collider;
+  float newResources = 0;
   ArrayList<Signal> toSend = new ArrayList<>();
   float sellPrice = 50;
   
@@ -24,7 +25,9 @@ public class FactoryBuilding implements Building {
   // Factory
   float fuel = 0f;
   ResourceType input1 = ResourceType.coal;
+  float input1Count = 0; float input1Cost;
   ResourceType input2 = ResourceType.iron;
+  float input2Count = 0; float input2Cost;
   ResourceType output = craftResult(input1, input2);
   
   // Rendering
@@ -35,6 +38,7 @@ public class FactoryBuilding implements Building {
     factoryBuildings++;
     buildingId = (type.toString() + ":" + factoryBuildings);
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, factoryBuilding);
+    setResource(input1, input2);
     
     // render
     renderX = (int)(position.x - xySize.x);
@@ -45,44 +49,69 @@ public class FactoryBuilding implements Building {
   void tickFrame() { // per frame method
     render();
     if (renderInfo) infoPanel.render();
-  }    
-  void tickSecond() {}
+    
+    for (Signal s : toSend) {
+      emit(s);
+    }  
+    toSend.clear();
+  }      
+  void tickSecond() {produce();}
   void consume(Signal receivedSignal) {  // take in signal
     Resource intake = receivedSignal.contents;
     if (intake != null) {
       ResourceType incomingType = intake.getType();
       float amount = intake.getAmount();
       if (incomingType == input1){
-        
+        input1Count += amount;
         receivedSignal.destroy = true;
       }
       else if (incomingType == input2) {
-        
+        input2Count += amount;
         receivedSignal.destroy = true;
       }
       if (fuelResources.contains(incomingType)) {
-        fuel += amount;
+        fuel += resourceValue.get(incomingType)*10*amount;
+        
         receivedSignal.destroy = true;
       }
+      if (infoPanel!=null) infoPanel.updateInfo(fuel, input1Count, input2Count);
     }
     
   }
-  void produce(Signal processingSignal) {} // nothing to produce
+  void produce() {
+    if (input1 != null && input2 != null) {
+      while(input1Count >= input1Cost && input2Count >= input2Cost && fuel >= 20) {
+         input1Count-=input1Cost;
+         input2Count-=input2Cost;
+         fuel-=20;
+         newResources += 5;
+      }
+      int sendableResources = floor(newResources/5)*5;
+      if (sendableResources >= 5) {
+        newResources-=sendableResources;
+        int waves = ceil(sendableResources/5);
+        float perSignal = sendableResources/waves;
+        for (int i = 0; i < waves * 5; i++) {
+          toSend.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, new Resource(output, perSignal/5)));   
+        }
+      }
+    }
+  }
   
-  void emit(Signal s) {}   // doesn't send out signals
+  void emit(Signal s) {activeSignals.add(s.copy());}
   void render() {image(factoryIcon, renderX, renderY, dSize, dSize);} //draws the building
   
   //getters
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy());
+   return new BuildingData(this, type, position, xySize, sellPrice, fuel, input1, input1Count, input2, input1Count);
   }
   Collider getCollider() {return collider;}
   float getBuildingPrice() {return sellPrice;}
   
   //setter
-  void setAim(PVector newAim) {}
+  void setAim(PVector newAim) {target = newAim;}
   void toggleInfo() {
     renderInfo = !renderInfo; // toggle bool
     
@@ -92,4 +121,13 @@ public class FactoryBuilding implements Building {
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {}
+  void setResource(ResourceType input1, ResourceType input2) {
+    this.input1 = input1;
+    this.input2 = input2;
+    
+    Float[] newCosts = getCraftCost(input1, input2);
+    input1Cost = newCosts[0];
+    input2Cost = newCosts[1];
+    output = craftResult(input1, input2);
+  }
 }

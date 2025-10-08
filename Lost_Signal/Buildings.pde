@@ -1,5 +1,5 @@
 public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() {{add(BuildingType.test);}};
-public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}}; //<>// //<>//
+public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}}; //<>//
 public static final ArrayList<BuildingType> lumberBuilding = new ArrayList<>() {{add(BuildingType.lumber);}};
 public static final ArrayList<BuildingType> relayBuilding = new ArrayList<>() {{add(BuildingType.relay);}};
 public static final ArrayList<BuildingType> storageBuilding = new ArrayList<>() {{add(BuildingType.storage);}};
@@ -65,7 +65,7 @@ public interface Building{
   
   // event
   void consume(Signal receivedSignal); // take in signal
-  void produce(Signal processingSignal); // do something with that signal
+  void produce(); // do something with that signal
   void emit(Signal s);   // send out signals
   void render(); //draws the building
   
@@ -80,6 +80,7 @@ public interface Building{
   void setAim(PVector newAim);
   void toggleInfo();
   void toggleMode();
+  void setResource(ResourceType input1, ResourceType input2); 
 }
 /**                                                                  bank building                                                 */
 int bankBuildings = 0;
@@ -129,7 +130,7 @@ public class BankBuilding implements Building {
     }
     receivedSignal.destroy = true;
   }
-  void produce(Signal processingSignal) {} // nothing to produce
+  void produce() {} // nothing to produce
   
   void emit(Signal s) {}   // doesn't send out signals
   void render() {image(bankIcon, renderX, renderY, dSize, dSize);} //draws the building
@@ -154,6 +155,7 @@ public class BankBuilding implements Building {
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {}
+  void setResource(ResourceType input1, ResourceType input2) {}
 }
 /**                                                                  testing building                                                 */
 int testBuildings = 0;
@@ -202,7 +204,7 @@ public class TestBuilding implements Building {
   void tickSecond() {emit(null);}
   // receive, process, send
   void consume(Signal receivedSignal) {} // does not consume
-  void produce(Signal processingSignal) {} // does not produce
+  void produce() {} // does not produce
   void emit(Signal s) {
     Signal newSignal = new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, null);
     activeSignals.add(newSignal.copy());
@@ -232,7 +234,6 @@ public class TestBuilding implements Building {
       infoPanel = new InfoPanel(getBuildingData());
     infoPanel.initialize(renderInfo);
   }
-  void toggleMode() {
-    // emit stored signals
-  }
+  void toggleMode() {}
+  void setResource(ResourceType input1, ResourceType input2) {}
 }

@@ -24,6 +24,18 @@ public enum ButtonAction {
   toggle,
   next,
   back,
+  expand,
+  
+  buildMenu,
+  statsMenu,
+  pauseMenu,
+  
+  a,
+  b,
+  c,
+  d,
+  e,
+  f
 }
 
 // enum for the type of ui
@@ -49,8 +61,8 @@ public enum ResourceType {
   
   // 1
   steel, // fuel + coal + iron
-  electromagnet, // fuel + iron + copper
-  thermoConductor, // fuel + coal + copper
+  emagnet, // fuel + iron + copper
+  conductor, // fuel + coal + copper
   carbonFiber,  // fuel + coal + leaves
   charcoal, // fuel + fuel + lumber - equiv to coal
   planks, // fuel + wood + iron
@@ -59,9 +71,9 @@ public enum ResourceType {
   circuit, // fuel + copper + sap
   
   // 2
-  pulseCore, // steel + electromagnet
-  fluxium,   // thermoConductor + electromagnet
-  pyroSteel, // thermoConductor + steel
+  pulseCore, // steel + emagnet
+  fluxium,   // conductor + emagnet
+  pyroSteel, // conductor + steel
   
   // ruined
   mulch, // sap + wood|leaves
@@ -69,9 +81,10 @@ public enum ResourceType {
 }
 public static ArrayList<Float> targets = new ArrayList<>();
 static {
-  targets.add(0, 50f);
-  targets.add(1, 1000f);
-  targets.add(2, 50000f);
+  targets.add(0, 0f);
+  targets.add(1, 50f);
+  targets.add(2, 1000f);
+  targets.add(3, 50000f);
 }
 
 public static HashMap<ResourceType, PVector> resourceSignalColor = new HashMap<>();
@@ -85,6 +98,16 @@ static {
   resourceSignalColor.put(ResourceType.wood, new PVector(150, 60, 0));
   resourceSignalColor.put(ResourceType.leaves, new PVector(20, 100, 50));
   resourceSignalColor.put(ResourceType.sap, new PVector(150, 150, 20));
+  
+  resourceSignalColor.put(ResourceType.steel, new PVector(33, 33, 35));
+  resourceSignalColor.put(ResourceType.emagnet, new PVector(20, 50, 100));
+  resourceSignalColor.put(ResourceType.conductor, new PVector(100, 50, 20));
+  resourceSignalColor.put(ResourceType.carbonFiber, new PVector(175, 175, 200));
+  resourceSignalColor.put(ResourceType.charcoal, new PVector(200, 200, 200));
+  resourceSignalColor.put(ResourceType.planks, new PVector(170, 90, 50));
+  resourceSignalColor.put(ResourceType.nails, new PVector(50, 70, 70));
+  resourceSignalColor.put(ResourceType.lamp, new PVector(90, 90, 20));
+  resourceSignalColor.put(ResourceType.circuit, new PVector(150, 220, 170));
 }
 public static HashMap<BuildingType, Float> buildingCosts = new HashMap<>();
 static {
@@ -111,6 +134,16 @@ static {
   resourceValue.put(ResourceType.wood, 0.0175f);
   resourceValue.put(ResourceType.leaves, 0.008f);
   resourceValue.put(ResourceType.sap, 0.0215f);
+  
+  resourceValue.put(ResourceType.steel, 0.3f);
+  resourceValue.put(ResourceType.emagnet, 0.3f);
+  resourceValue.put(ResourceType.conductor, 0.3f);
+  resourceValue.put(ResourceType.carbonFiber, 0.3f);
+  resourceValue.put(ResourceType.charcoal, 0.3f);
+  resourceValue.put(ResourceType.planks, 0.3f);
+  resourceValue.put(ResourceType.nails, 0.3f);
+  resourceValue.put(ResourceType.lamp, 0.3f);
+  resourceValue.put(ResourceType.circuit, 0.3f);
 }
 public static HashMap<ResourceType, Float> resourceSpeed = new HashMap<>();
 static {

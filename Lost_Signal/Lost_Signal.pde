@@ -1,5 +1,6 @@
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map.*;
 // global variables
 /// constants
 public static final float fixedDeltaTime = 0.1f;
@@ -17,12 +18,13 @@ public static LinkedList<GlobalAlert> alertStack = new LinkedList<>();
 public static BuildingType buildMode = BuildingType.none; // current build target
 
 public static boolean isGameOn = true;
-public static int stageNumber = 0;
+public static int stageNumber = 1;
 
 /// Interference
 public static float globalInterference = 0;
 public static float globalMoney = 80;
 public static float earnedAmount = 0;
+public static float spentAmount = 0;
 
 // Called every frame
 float lastUpdate = 0;
@@ -46,7 +48,7 @@ void draw() {
       globalInterference = activeSignals.size()/7.5f;
       if (targets.get(stageNumber) < earnedAmount) {
         stageNumber++;
-        alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 10));
+        alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 4));
       }
     }
     
@@ -87,7 +89,7 @@ void newGame() {
   float y = height-50;
   theBank = addBuilding(new PVector(x, y), BuildingType.bank);
   
-  alertStack.add(new GlobalAlert("New Game Started", 6));
+  alertStack.add(new GlobalAlert("New Game Started", 4));
 }
 // Updates and culls signals that are lost
 void updateSignals() {

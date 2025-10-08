@@ -1,9 +1,11 @@
 // Called when a mouse click occurs
 PVector clickLocation = new PVector();
 Building clickBuilding;
+Button clickButton;
+
 PVector releaseLocation = new PVector();
 Building releaseBuilding;
-Button releaseButton;
+
 PVector holdLocation = new PVector();
 
 PVector aimDir = new PVector();
@@ -21,9 +23,13 @@ void mousePressed() {
   // gather click data
   clickLocation.set(mouseX, mouseY);
   clickBuilding = clickBuilding(clickLocation);
+  clickButton = clickButton(clickLocation);
     
   if (mouseButton == LEFT) {
     lmDown = true;
+    if (clickButton != null) {
+      clickButton.click(); 
+    }
   }
   if (mouseButton == RIGHT) {
     rmDown = true;
@@ -60,16 +66,11 @@ void updateMouse() {
 void mouseReleased() {
   // gather click data
   releaseLocation.set(mouseX, mouseY);
-  
-  releaseButton = clickButton(releaseLocation);
   releaseBuilding = clickBuilding(releaseLocation);
   
   if (mouseButton == LEFT) { // released left
     lmDown = false;
-    if (releaseButton != null) {
-      releaseButton.click(); 
-    }
-    else if (validPlacement) { // validPlacement set if holding, so if building hold is released
+    if (validPlacement) { // validPlacement set if holding, so if building hold is released
       addBuilding(releaseLocation.copy(), buildMode);
       buildMode = BuildingType.none; // reset
       validPlacement = false;
@@ -107,6 +108,14 @@ void keyPressed() {
      buildMode = BuildingType.factory;
    else if (key == 'p')
      globalMoney+=100;
+   else if (key == TAB) {
+     if (buildingMenu == null) buildingMenu = new UIPanel(UIType.buildings); 
+     else {
+       buildingMenu.initalizePanel(false);
+       buildingMenu = null; 
+     }
+   }
+       
    else 
      buildMode = BuildingType.none; 
    
@@ -165,6 +174,5 @@ boolean checkPlacement(PVector location, PVector size) {
       if (c.collisionResult || c.invalidCollision)
         return false;
     }
-
   return true; // true if no collisions
 }
