@@ -1,13 +1,16 @@
 public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() {{add(BuildingType.test);}};
-public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}}; //<>//
+public static final ArrayList<BuildingType> mineBuilding = new ArrayList<>() {{add(BuildingType.mine);}}; //<>// //<>//
 public static final ArrayList<BuildingType> lumberBuilding = new ArrayList<>() {{add(BuildingType.lumber);}};
 public static final ArrayList<BuildingType> relayBuilding = new ArrayList<>() {{add(BuildingType.relay);}};
 public static final ArrayList<BuildingType> storageBuilding = new ArrayList<>() {{add(BuildingType.storage);}};
+public static final ArrayList<BuildingType> factoryBuilding = new ArrayList<>() {{add(BuildingType.factory);}};
+public static final ArrayList<BuildingType> bankBuilding = new ArrayList<>() {{add(BuildingType.bank);}};
 
 // Building Methods
 Building addBuilding(PVector position, BuildingType type) {
   Building newBuilding = newBuilding(position, type);
   if (newBuilding != null){
+    globalMoney -= buildingCosts.get(type);
     if (!worldBuildings.keySet().contains(type))  // if not there, add it
       worldBuildings.put(type, new ArrayList<Building>());
     worldBuildings.get(type).add(newBuilding);
@@ -25,6 +28,8 @@ Building newBuilding(PVector pos, BuildingType type) {
     case lumber: return new GathererBuilding(pos, type);
     case relay: return new RelayBuilding(pos);
     case storage: return new StorageBuilding(pos);
+    case factory: return new FactoryBuilding(pos);
+    case bank: return new BankBuilding(pos);
     // case export:
     default: return null;
   }
@@ -69,13 +74,88 @@ public interface Building{
   PVector getBuildingPosition();
   BuildingData getBuildingData();
   Collider getCollider();
+  float getBuildingPrice();
   
   // setters
   void setAim(PVector newAim);
   void toggleInfo();
   void toggleMode();
 }
+/**                                                                  bank building                                                 */
+int bankBuildings = 0;
+public class BankBuilding implements Building {
+  // Buliding data
+  /// positional
+  PVector position; // space in 2d
+  PVector xySize = new PVector(25, 25); // x size, y size
+  
+  // Building
+  String buildingId;
+  BuildingType type = BuildingType.bank;
+  
+  // Info Rendering
+  InfoPanel infoPanel;
+  boolean renderInfo = false;
 
+  // Storage 
+  Collider collider;
+  
+  // Rendering
+  int renderX, renderY, dSize;
+  
+  BankBuilding(PVector pos) {
+    position = pos;
+    bankBuildings++;
+    buildingId = (type.toString() + ":" + bankBuildings);
+    collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, bankBuilding);
+    
+    // render
+    renderX = (int)(position.x - xySize.x);
+    renderY = (int)(position.y - xySize.y);
+    dSize = (int)(xySize.x * 2);
+  }
+  
+  void tickFrame() { // per frame method
+    render();
+    if (renderInfo) infoPanel.render();
+  }    
+  void tickSecond() {}
+  void consume(Signal receivedSignal) {  // take in signal
+    Resource intake = receivedSignal.contents;
+    if (intake != null) {
+      float sellGain = intake.getAmount() * (resourceValue.get(intake.getType()));
+      globalMoney += sellGain;
+      earnedAmount += sellGain;      
+    }
+    receivedSignal.destroy = true;
+  }
+  void produce(Signal processingSignal) {} // nothing to produce
+  
+  void emit(Signal s) {}   // doesn't send out signals
+  void render() {image(bankIcon, renderX, renderY, dSize, dSize);} //draws the building
+  
+  //getters
+  String getBuildingId() {return buildingId;};
+  PVector getBuildingPosition() {return position.copy();}
+  BuildingData getBuildingData() {
+     return new BuildingData(this, type, position.copy(), xySize.copy());
+  }
+  Collider getCollider() {return collider;}
+  float getBuildingPrice() {return -1;}
+  
+  //setter
+  void setAim(PVector newAim) {}
+  void toggleInfo() {
+    renderInfo = !renderInfo; // toggle bool
+    
+    if (renderInfo) // takes a new snapshot of data
+      infoPanel = new InfoPanel(getBuildingData());
+      
+    infoPanel.initialize(renderInfo);
+  }
+  void toggleMode() {}
+}
+/**                                                                  testing building                                                 */
 int testBuildings = 0;
 public class TestBuilding implements Building {
   // Buliding data
@@ -92,6 +172,7 @@ public class TestBuilding implements Building {
   String buildingId;
   ArrayList<Integer> signalLayers = new ArrayList<>() {{add(0);}};
   ArrayList<Resource> storedResources = new ArrayList<>();
+  float sellPrice = 10;
   
   // Info Rendering
   InfoPanel infoPanel;
@@ -105,6 +186,7 @@ public class TestBuilding implements Building {
     testBuildings++;
     type = BuildingType.test;
     // General
+    sellPrice = buildingCosts.get(type)/2;
     position = pos;
 
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, testBuilding);
@@ -136,9 +218,10 @@ public class TestBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy());
+     return new BuildingData(this, type, position.copy(), xySize.copy(), sellPrice);
   }
   Collider getCollider() {return collider;}
+  float getBuildingPrice() {return sellPrice;}
   
   //setters
   void setAim(PVector newAim) {target = newAim;}
@@ -149,5 +232,7 @@ public class TestBuilding implements Building {
       infoPanel = new InfoPanel(getBuildingData());
     infoPanel.initialize(renderInfo);
   }
-  void toggleMode() {} // no building mode to toggle
+  void toggleMode() {
+    // emit stored signals
+  }
 }

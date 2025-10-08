@@ -13,6 +13,7 @@ boolean rmDown = false;
 
 double startHoldTime = 0;
 double holdTime = 0;
+double holdMargin = 100;
 
 boolean validPlacement = false;
 
@@ -35,7 +36,7 @@ void updateMouse() {
   
   if (rmDown) { // right mouse is held down
     holdTime = millis() - startHoldTime;
-    if (clickBuilding != null && holdTime > 50) { // right mouse is being held on a building & has held for more than .05s
+    if (clickBuilding != null && holdTime > holdMargin && clickBuilding != theBank) { // right mouse is being held on a building & has held for more than .05s
       stroke(0,0, 255);
       strokeWeight(5);
       PVector startPos = clickBuilding.getBuildingPosition();
@@ -48,9 +49,10 @@ void updateMouse() {
   }
   if (lmDown) { // left mouse is held down
     holdTime = millis() - startHoldTime;
-    if (buildMode != BuildingType.none && holdTime > 50) { // building is selected for placing
-      validPlacement = checkPlacement(new PVector(holdLocation.x, holdLocation.y), new PVector(25,25));
-      placingGraphic();
+    if (buildMode != BuildingType.none && holdTime > holdMargin) { // building is selected for placing
+      int buildCost = floor(buildingCosts.get(buildMode));
+      validPlacement = (checkPlacement(new PVector(holdLocation.x, holdLocation.y), new PVector(25,25)) && buildCost <= globalMoney);
+      placingGraphic(buildCost);
     }
   }
 }
@@ -101,6 +103,10 @@ void keyPressed() {
      buildMode = BuildingType.lumber;
    else if (key == '5')
      buildMode = BuildingType.storage;
+   else if (key == '6')
+     buildMode = BuildingType.factory;
+   else if (key == 'p')
+     globalMoney+=100;
    else 
      buildMode = BuildingType.none; 
    
@@ -108,7 +114,7 @@ void keyPressed() {
 }
 
 Button clickButton(PVector location) {
-  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType); // persice click
+  ArrayList<CollisionData> clickData = gameWorld.checkCollision(location.copy(), 1, null, defaultBuildingType);
   Button clickButton = null;
   for (CollisionData cData : clickData) {
     clickButton = cData.button;
@@ -129,7 +135,7 @@ Building clickBuilding(PVector location) {
   return null;
 }
 
-void placingGraphic() {
+void placingGraphic(int buildCost) {
   color uiColor;
   if (validPlacement) 
     uiColor = color(0, 255, 0);    
@@ -146,7 +152,7 @@ void placingGraphic() {
   textSize(20);
   textAlign(CENTER);
   text("Placing " + buildMode.toString(), holdLocation.x, holdLocation.y - 30);
-  text("Cost $0", holdLocation.x, holdLocation.y + 50);
+  text("Cost $" + formatDp(buildCost), holdLocation.x, holdLocation.y + 50);
   }
   
 boolean checkPlacement(PVector location, PVector size) {

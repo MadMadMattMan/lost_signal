@@ -96,7 +96,7 @@ public class BuildingData {
   String buildingId;
   Resource storedResources;
   Resource overflowResources;
-  float cost;
+  float sellPrice;
   
   // General output
   ResourceType selectedOutput = ResourceType.none;
@@ -110,35 +110,46 @@ public class BuildingData {
   HashMap<ResourceType, Float> storage;
   
   // generic constructor
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize) { 
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice) { 
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
+    this.sellPrice = sellPrice;
   }
   // producer constructor
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float prodRate, ResourceType output) { 
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice, float prodRate, ResourceType output) { 
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
+    this.sellPrice = sellPrice;
     this.productionRate = prodRate;
     this.selectedOutput = output;
   }
   // relay constructor
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, boolean aimMode ) {
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice, boolean aimMode ) {
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
+    this.sellPrice = sellPrice;
     this.aimMode = aimMode;
   }
   // storage constructor
-  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, HashMap<ResourceType, Float> storage) {
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize, float sellPrice, HashMap<ResourceType, Float> storage) {
     this.building = building;
     this.type = type;
     this.pos = pos;
     this.xySize = xySize;
+    this.sellPrice = sellPrice;
     this.storage = storage;
+  }
+  // bank constructor
+  BuildingData(Building building, BuildingType type, PVector pos, PVector xySize) {
+    this.building = building;
+    this.type = type;
+    this.pos = pos;
+    this.xySize = xySize;
   }
 }

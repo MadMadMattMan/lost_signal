@@ -1,44 +1,61 @@
+import java.util.HashSet;
+import java.util.LinkedList;
 // global variables
 /// constants
 public static final float fixedDeltaTime = 0.1f;
-public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<>() {{add(BuildingType.test); add(BuildingType.mine); add(BuildingType.relay); add(BuildingType.lumber); add(BuildingType.storage);}};
+public static final ArrayList<BuildingType> defaultBuildingType = new ArrayList<>() {{add(BuildingType.test); add(BuildingType.mine); add(BuildingType.relay); add(BuildingType.lumber); add(BuildingType.storage); add(BuildingType.factory); add(BuildingType.bank);}};
+public static final ArrayList<ResourceType> fuelResources = new ArrayList<>() {{add(ResourceType.coal); add(ResourceType.wood); add(ResourceType.leaves);}};
 
 /// tracking
 public static World gameWorld; // stores and deals with the environment data
 public static ArrayList<Signal> activeSignals = new ArrayList<>(); // List storing every signal
 public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new HashMap<>(); // Map storing every building mapped to to their type
+public static Building theBank;
 public static ArrayList<InfoPanel> openPanels = new ArrayList<>(); // List with every open panel
+public static LinkedList<GlobalAlert> alertStack = new LinkedList<>();
 
 public static BuildingType buildMode = BuildingType.none; // current build target
 
+public static boolean isGameOn = true;
+public static int stageNumber = 0;
 
 /// Interference
 public static float globalInterference = 0;
-public static float globalMoney = 0;
+public static float globalMoney = 80;
+public static float earnedAmount = 0;
 
 // Called every frame
-float lastPulse = 0;
+float lastUpdate = 0;
 
 void draw() {
   //Resets scene
-  background(255);
+  background(0);
   
-  //updates - in order of rendering layer;
-  image(gameWorld.getGroundMap(), 0, 0);
-  gameWorld.render();
-  updateBuildings(true);
-  updateSignals();
-  
-  updateMouse();
-  
-  globalInterference = activeSignals.size()/7.5f;
-  renderUI();
-  
-  //one second update
-  if ((millis() - lastPulse) >= 1000) {
-    lastPulse = millis();
-    updateBuildings(false);
-  }
+  if (isGameOn) {
+    //updates - in order of rendering layer;
+    image(gameWorld.getGroundMap(), 0, 0);
+    gameWorld.render();
+    updateBuildings(true);
+    updateSignals();
+    
+    //one second update
+    if ((millis() - lastUpdate) >= 1000) {
+      lastUpdate = millis();
+      updateBuildings(false);
+      
+      globalInterference = activeSignals.size()/7.5f;
+      if (targets.get(stageNumber) < earnedAmount) {
+        stageNumber++;
+        alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 10));
+      }
+    }
+    
+    updateMouse();
+    renderUI();
+    GlobalAlert currentAlert = alertStack.peek();
+    if (currentAlert != null)
+      currentAlert.render();
+  } 
 }
 
 // Called once at the start of the game
@@ -49,7 +66,7 @@ void setup() {
   //size(1000, 500);
   frameRate(60);
   background(255);
-  text("Generating Map", 0, 0, width, height);
+  text("Generating Map", 0, 0, width, height);  
   
   // 0 frame
   collectImages();
@@ -66,13 +83,11 @@ void newGame() {
   
   initializeGround();
   
-  // Testing setup
-  /**
-  for (int i = 0; i < 500; i++) {
-    activeSignals.add(new Signal(new PVector(width/2, height/2), new PVector(random(-1f, 1f), random(-1f, 1f))));
-  }*/
+  float x = random(50, width-50);
+  float y = height-50;
+  theBank = addBuilding(new PVector(x, y), BuildingType.bank);
   
-  
+  alertStack.add(new GlobalAlert("New Game Started", 6));
 }
 // Updates and culls signals that are lost
 void updateSignals() {

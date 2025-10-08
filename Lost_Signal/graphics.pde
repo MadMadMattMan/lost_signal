@@ -1,16 +1,19 @@
 // Image gathering
-PImage mineIcon, relayIcon, factoryIcon, lumberIcon, storageIcon;
-PImage xIcon, toggleIcon;
+PImage mineIcon, relayIcon, factoryIcon, lumberIcon, storageIcon, bankIcon;
+PImage xIcon, toggleIcon, nextIcon;
 void collectImages() {
   mineIcon = loadImage("assets/buildings/mine.png"); 
   relayIcon = loadImage("assets/buildings/relay.png"); 
   factoryIcon = loadImage("assets/buildings/factory.png"); 
   lumberIcon = loadImage("assets/buildings/lumber.png"); 
-  storageIcon = loadImage("assets/buildings/storage.png"); 
+  storageIcon = loadImage("assets/buildings/storage.png");
+  bankIcon = loadImage("assets/buildings/bank.png");
   
   xIcon = loadImage("assets/ui/x.png");
   toggleIcon = loadImage("assets/ui/toggle.png");
+  nextIcon = loadImage("assets/ui/next.png");
 }
+
 
 // Building info screen
 class InfoPanel {
@@ -29,36 +32,52 @@ class InfoPanel {
   float prodRate;
   boolean aimMode;
   HashMap<ResourceType, Float> storage;
+  float sellPrice;
   
+  boolean leftSide = true;
   PVector center = new PVector();
   PVector topLeft = new PVector();
   PVector bottomRight;
-  PVector xySize = new PVector(60, 100);
+  PVector xySize = new PVector(80, 120);
   int offset = 5;
   
   float textXOffset;
   String titleText;
   float titleSize;
   
-  InfoPanel(BuildingData bData) {
+  float infoPageNum = 0;
+  
+  InfoPanel(BuildingData bData) {   
     this.building = bData.building;
     this.type = bData.type;
     
     PVector buildingPos = bData.pos;
     PVector buildingSize = bData.xySize;
     
+    if (buildingPos.x < 200)
+      leftSide = false;
+    
     this.resource = bData.selectedOutput;
     this.prodRate = bData.productionRate;
     this.aimMode = bData.aimMode;
     this.storage = bData.storage;
+    this.sellPrice = bData.sellPrice;
     
-    topLeft.x = buildingPos.x - buildingSize.x - xySize.x - offset;
-    topLeft.y = buildingPos.y + buildingSize.y - xySize.y;
-    bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
-    center = new PVector(topLeft.x + xySize.x/2, topLeft.y + xySize.y/2);
+    if (leftSide) {
+      topLeft = new PVector(buildingPos.x - buildingSize.x - xySize.x - offset, buildingPos.y + buildingSize.y - xySize.y);
+      bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
+      center = new PVector(topLeft.x + xySize.x/2, topLeft.y + xySize.y/2);
+    }
+    else {
+      topLeft = new PVector(buildingPos.x + buildingSize.x + offset, buildingPos.y + buildingSize.y - xySize.y);
+      bottomRight = new PVector(topLeft.x + xySize.x, topLeft.y + xySize.y);
+      center = new PVector(topLeft.x + xySize.x/2, topLeft.y + xySize.y/2);
+    }
     
     buttons.put(ButtonAction.destroy, new Button(this, ButtonAction.destroy));
     buttons.put(ButtonAction.toggle, new Button(this, ButtonAction.toggle));
+    buttons.put(ButtonAction.next, new Button(this, ButtonAction.next));
+    buttons.put(ButtonAction.back, new Button(this, ButtonAction.back));
     
     destroyButtonPos = new PVector(bottomRight.x - destroyButtonSize, bottomRight.y - destroyButtonSize);
     destroyButtonAlt = bottomRight.copy();
@@ -80,11 +99,7 @@ class InfoPanel {
     else
       titleSize = baseSize;
   }
- 
- /**
-  void relayPanel(BuildingData bData) {
-    //toggle aim
-  }*/
+  
   void gathererPanel(BuildingData bData) {
     this.resource = bData.selectedOutput;
     this.prodRate = bData.productionRate;
@@ -94,25 +109,35 @@ class InfoPanel {
     switch (action) {
       case destroy: initialize(false); gameWorld.removeBuilding(type, building); break;
       case toggle: building.toggleMode(); break;
+      case next: infoPageNum++; if(infoPageNum>1)infoPageNum=0; break;
+      case back: infoPageNum--; if(infoPageNum<0)infoPageNum=1; break;
       default: println("unknown InfoPanel button press");
     }
   }
   
   void initialize(boolean state) {
     if (state) { // setup
-      colliders.add(gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.destroy))); 
-      colliders.add(gameWorld.createCollider(toggleButtonPos.copy(), toggleButtonAlt.copy(), buttons.get(ButtonAction.toggle))); 
+      if (type != BuildingType.bank){
+        colliders.add(gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.destroy))); 
+        colliders.add(gameWorld.createCollider(toggleButtonPos.copy(), toggleButtonAlt.copy(), buttons.get(ButtonAction.toggle))); 
+      }
+      else {
+        colliders.add(gameWorld.createCollider(destroyButtonPos.copy(), destroyButtonAlt.copy(), buttons.get(ButtonAction.next)));
+        colliders.add(gameWorld.createCollider(toggleButtonPos.copy(), toggleButtonAlt.copy(), buttons.get(ButtonAction.back))); 
+      }
     }
     else { // destroy
       for (Collider c : colliders) {
         gameWorld.removeCollider(c);
       }
+      globalMoney += sellPrice;
       colliders.clear();
     }
   }
   
-  void updateInfo(ResourceType newResource) {
+  void updateInfo(ResourceType newResource, float newProdRate) {
     resource = newResource;
+    this.prodRate = newProdRate;
   }
   void updateInfo(boolean aimMode) {
     this.aimMode = aimMode; 
@@ -126,48 +151,133 @@ class InfoPanel {
     rectMode(CORNER);
     rect(topLeft.x, topLeft.y, xySize.x, xySize.y);
     
-    // Destroy render
-    fill(200, 50, 50);
-    rect(destroyButtonPos.x, destroyButtonPos.y, destroyButtonSize, destroyButtonSize);
-    image(xIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
-    fill(150, 150, 150);
-    rect(toggleButtonPos.x, toggleButtonPos.y, toggleButtonSize, toggleButtonSize);
-    image(toggleIcon, (int)(toggleButtonPos.x), (int)(toggleButtonPos.y), (int)destroyButtonSize, (int)toggleButtonSize);
-    
-    //Text render
+    // Title
     fill(0);
     float yOffset = titleSize;
     textSize(titleSize);
     textAlign(CENTER);
     text(titleText, center.x, topLeft.y + yOffset);
-    textSize(13);
-    textAlign(LEFT);
-    if (type == BuildingType.relay) {
-      text("Aiming: ", textXOffset, topLeft.y + (yOffset+=15));
-      text(""+aimMode, textXOffset, topLeft.y + (yOffset+=13));
-    }
-    else if (type == BuildingType.storage) {
-      text("Stored: ", textXOffset, topLeft.y + (yOffset+=15));
-      if (storage.keySet().size() < 1)
-        text("Empty", textXOffset, topLeft.y + (yOffset+=13));
-      else {
-        for (ResourceType resource : storage.keySet()) {
-          text(storage.get(resource), textXOffset, topLeft.y + (yOffset+=13));
+    
+    if (type != BuildingType.bank) {
+      fill(200, 50, 50);
+      rect(destroyButtonPos.x, destroyButtonPos.y, destroyButtonSize, destroyButtonSize);
+      image(xIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
+      fill(150, 150, 150);
+      rect(toggleButtonPos.x, toggleButtonPos.y, toggleButtonSize, toggleButtonSize);
+      image(toggleIcon, (int)(toggleButtonPos.x), (int)(toggleButtonPos.y), (int)destroyButtonSize, (int)toggleButtonSize);
+      
+      //Text render
+      fill(0);
+      textSize(15);
+      textAlign(LEFT);
+      if (type == BuildingType.relay) {
+        text("Aiming: ", textXOffset, topLeft.y + (yOffset+=15));
+        text(""+aimMode, textXOffset, topLeft.y + (yOffset+=12));
+      }
+      else if (type == BuildingType.storage) {
+        text("Stored: ", textXOffset, topLeft.y + (yOffset+=15));
+        if (storage.keySet().size() < 1)
+          text("Empty", textXOffset, topLeft.y + (yOffset+=12));
+        else {
+          int rows = storage.keySet().size();
+          float tSize = 15;
+          if (rows > 3)
+            tSize = 60f/rows;
+          textSize(tSize);
+          for (ResourceType resource : storage.keySet())
+            text(resource + ": " + floor(storage.get(resource)), textXOffset, topLeft.y + (yOffset+=tSize));
         }
       }
+      else {
+        textSize(15);
+        String txt = resource.toString() + ": " + formatDp(prodRate) + "/s";
+        float txtWidth = textWidth(txt);
+        if (txtWidth > xySize.x) {
+          float actualWidth = txtWidth;
+          textSize(15 * (xySize.x / actualWidth));
+        }
+        text(txt, textXOffset, topLeft.y + (yOffset+=15));
+      }
+      textAlign(RIGHT);
+      textSize(13);
+      text("Sell:", destroyButtonAlt.x, destroyButtonPos.y-14);
+      text("$"+formatDp(sellPrice), destroyButtonAlt.x, destroyButtonPos.y-1);
     }
     else {
-      text(resource.toString() + ": " + Math.round(prodRate) + "/s", textXOffset, topLeft.y + (yOffset+=15));
+     image(nextIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
+     copy(nextIcon, 0, 0, 100, 100, (int)(toggleButtonPos.x + toggleButtonSize), (int)(toggleButtonPos.y), -(int)toggleButtonSize, (int)toggleButtonSize);
+     
+     textSize(13);
+     textAlign(CENTER);
+     text("Send signals\nhere for sale", center.x, topLeft.y + (yOffset+=13));
+     yOffset+=30;
+     textAlign(LEFT);
+     if (infoPageNum == 0)
+       text("Coal: $" + resourceValue.get(ResourceType.coal) + 
+            "\nCopper: $" + resourceValue.get(ResourceType.copper) + 
+            "\nIron: $" + resourceValue.get(ResourceType.iron)
+            , topLeft.x, topLeft.y + yOffset);
+     if (infoPageNum == 1)
+       text("Wood: $" + resourceValue.get(ResourceType.wood) +
+            "\nLeaves: $" + resourceValue.get(ResourceType.leaves) + 
+            "\nSap: $" + resourceValue.get(ResourceType.sap)
+            , topLeft.x, topLeft.y + yOffset);
     }
   }
+}
+
+class GlobalAlert {
+  String message;
+  float displayTime;
+  
+  float spawnTime;
+  float time = 0;
+  float transferTime = 2f;
+  float upTime;
+  float restY = height/10;
+  float xPos = width/2;
+  
+  GlobalAlert(String msg, float dt) {
+    this.message = msg;
+    this.displayTime = dt;
+    spawnTime = millis();
+    upTime = displayTime - transferTime;
+  }
+  
+  void render() {
+    time = (millis()-spawnTime)/1000;
+    textSize(50);
+    fill(0);
+    textAlign(CENTER);
+    
+    if (time < transferTime) {
+      text(message, xPos, lerp(-100, restY, time/transferTime));
+    }
+    else if (time > upTime) {
+      text(message, xPos, lerp(restY, -100, (time-upTime)/transferTime));
+    }
+    else
+      text(message, xPos, restY);
+      
+    if (time > displayTime)
+      alertStack.poll();
+  }
+}
+
+String formatDp(float value) {
+  float adjDollar = round(value*100)/100f; //1.1111111 -> 111 -> 1.11
+  return ""+adjDollar;
 }
 
 void renderUI() {
   textSize(30);
   textAlign(LEFT);
   fill(0);
-  text("Interference " + globalInterference, 5, 35);
-  text("Money $" + globalMoney, 5, 65);
+  text("Interference " + globalInterference, 10, 35);
+  text("Money $" + formatDp(globalMoney), 10, 65);
+  textAlign(RIGHT);
+  text("Stage " + stageNumber, width-10, 35);
+  text("Target:\nEarn " + targets.get(stageNumber), width-10, 65);
 }
 
 
@@ -291,5 +401,4 @@ int getBiomePenalty(float value, String desired) {
   int desiredIndex = biomeIndexMap.get(desired);
   
   return max(biomeIndex, desiredIndex) - min(biomeIndex, desiredIndex);
-  
 }

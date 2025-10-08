@@ -18,6 +18,7 @@ public class GathererBuilding implements Building {
   BuildingType type;
   ArrayList<Signal> toSend = new ArrayList<>();
   PImage icon;
+  float sellPrice = 0;
   
   // Info Rendering
   InfoPanel infoPanel;
@@ -29,7 +30,8 @@ public class GathererBuilding implements Building {
   Resource storedResources;
   int resourceIndex = 0;
   
-  float productionRate = 10; // resources per second - number is max speed
+  float productionLimit = 10; // resources per second - number is max speed
+  float productionRate;
   float placementPenalty = 0.2; // how much of a decline the wrong biome will cause per step (percent)
   float productionPercent = 0;
   
@@ -50,19 +52,23 @@ public class GathererBuilding implements Building {
       collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, mineBuilding);
       availableResources.add(ResourceType.coal); availableResources.add(ResourceType.iron); availableResources.add(ResourceType.copper);
       float penalty = getBiomePenalty(getNoiseAt(position), "rich ore");
-      productionRate *= 1 - (placementPenalty * penalty); 
+      productionLimit *= 1 - (placementPenalty * penalty); 
     }
-     if (type == BuildingType.lumber) {
+    if (type == BuildingType.lumber) {
       lumberBuildings++;
       icon = lumberIcon;
       buildingId = (type.toString() + ":" + lumberBuildings);
       collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, lumberBuilding);
-      availableResources.add(ResourceType.wood);
+      availableResources.add(ResourceType.wood); availableResources.add(ResourceType.leaves); availableResources.add(ResourceType.sap);
       float penalty = getBiomePenalty(getNoiseAt(position), "rich forest");
-      productionRate *= 1 - (placementPenalty * penalty); 
-     }
+      productionLimit *= 1 - (placementPenalty * penalty); 
+    }
+    
+    sellPrice = buildingCosts.get(type)/2;
     selectedResource = availableResources.get(0);
     storedResources = new Resource(selectedResource, 0); // initialize storage
+    
+    productionRate = productionLimit * resourceSpeed.get(selectedResource);
     
     // render
     renderX = (int)(position.x - xySize.x);
@@ -109,9 +115,10 @@ public class GathererBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), productionRate, selectedResource);
+     return new BuildingData(this, type, position.copy(), xySize.copy(), sellPrice, productionRate, selectedResource);
   }
   Collider getCollider() {return collider;}
+  float getBuildingPrice() {return sellPrice;}
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
@@ -126,7 +133,8 @@ public class GathererBuilding implements Building {
   void toggleMode() {
     if ((resourceIndex+=1) == (availableResources.size())) resourceIndex = 0;
     selectedResource = availableResources.get(resourceIndex);
-    infoPanel.updateInfo(selectedResource);
+    productionRate = productionLimit * resourceSpeed.get(selectedResource);
+    infoPanel.updateInfo(selectedResource, productionRate);
   }
 }
 
@@ -148,6 +156,8 @@ public class RelayBuilding implements Building {
   BuildingType type = BuildingType.relay;
   ArrayList<Resource> storedResources = new ArrayList<>();
   ArrayList<Signal> toSend = new ArrayList<>();
+  float sellPrice = 0;
+  
   
   // Info Rendering
   InfoPanel infoPanel;
@@ -160,6 +170,7 @@ public class RelayBuilding implements Building {
     buildingId = ("Relay " + relayBuildings);
     relayBuildings++;
     // General
+    sellPrice = buildingCosts.get(type)/2;
     position = pos;
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), false, this, relayBuilding);
   }
@@ -196,9 +207,10 @@ public class RelayBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), (target!=null));
+     return new BuildingData(this, type, position.copy(), xySize.copy(), sellPrice, (target!=null));
   }
   Collider getCollider() {return collider;}
+  float getBuildingPrice() {return sellPrice;}
   
   //setter
   void setAim(PVector newAim) {target = newAim; if (infoPanel!=null) infoPanel.updateInfo(target!=null);}
@@ -230,13 +242,14 @@ public class StorageBuilding implements Building {
   PVector xySize = new PVector(25, 25); // x size, y size
   
   /// targeting
-  double spread = PI/256;   // the degree of spread
+  float spread = PI/512;   // the degree of spread
   PVector target = new PVector(1, 0).normalize(); // target direction - normalized
   
   // Building
   String buildingId;
   BuildingType type = BuildingType.storage;
   ArrayList<Signal> toSend = new ArrayList<>();
+  float sellPrice = 0;
   
   // Info Rendering
   InfoPanel infoPanel;
@@ -255,6 +268,7 @@ public class StorageBuilding implements Building {
     storageBuildings++;
     buildingId = (type.toString() + ":" + storageBuildings);
     collider = gameWorld.createCollider(cornerOffset(pos, xySize, 0), cornerOffset(pos, xySize, 3), true, this, storageBuilding);
+    sellPrice = buildingCosts.get(type)/2;
     
     // render
     renderX = (int)(position.x - xySize.x);
@@ -298,9 +312,10 @@ public class StorageBuilding implements Building {
   String getBuildingId() {return buildingId;};
   PVector getBuildingPosition() {return position.copy();}
   BuildingData getBuildingData() {
-     return new BuildingData(this, type, position.copy(), xySize.copy(), storage);
+     return new BuildingData(this, type, position.copy(), xySize.copy(), sellPrice, storage);
   }
   Collider getCollider() {return collider;}
+  float getBuildingPrice() {return sellPrice;}
   
   //setter
   void setAim(PVector newAim) {target = newAim;}
@@ -312,5 +327,19 @@ public class StorageBuilding implements Building {
       
     infoPanel.initialize(renderInfo);
   }
-  void toggleMode() {}
+  void toggleMode() {
+    for (ResourceType rType : storage.keySet()) {
+      int newResources = floor(storage.get(rType));
+      
+      int sendableResources = floor(newResources/5)*5;
+      int leftoverResources = newResources-sendableResources;
+      int waves = ceil(sendableResources/5);
+      
+      for (int i = 0; i < waves * 5; i++)
+        toSend.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, new Resource(rType, 1)));   
+      for (int i = 0; i < leftoverResources; i++)
+        toSend.add(new Signal(position.copy(), randomAim(target, spread), this, defaultBuildingType, new Resource(rType, 1)));   
+    }
+    storage.clear();
+  }
 }
