@@ -116,7 +116,7 @@ static {
   resourceSignalColor.put(ResourceType.circuit, new PVector(150, 220, 170));
 }
 public static HashMap<BuildingType, Float> buildingCosts = new HashMap<>();
-static {
+static void resetCosts() {
   buildingCosts.put(BuildingType.test, 10f);
   
   buildingCosts.put(BuildingType.mine, 25f);

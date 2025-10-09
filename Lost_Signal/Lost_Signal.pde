@@ -25,7 +25,7 @@ public static int stageNumber = 1;
 
 /// Interference
 public static float globalInterference = 0;
-public static float globalMoney = 80;
+public static float globalMoney = 125;
 public static float earnedAmount = 0;
 public static float spentAmount = 0;
 
@@ -56,9 +56,9 @@ void draw() {
       globalInterference = activeSignals.size()/7.5f;
       if (targets.get(stageNumber) < earnedAmount) {
         stageNumber++;
-        if (stageNumber == 2) alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 4));
+        if (stageNumber == 2) {alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 4)); globalMoney+=50;}
         else if (stageNumber == 5) alertStack.add(new GlobalAlert("Quota complete\nyou win!", 4));
-        else alertStack.add(new GlobalAlert("Target reached\nnew target " + targets.get(stageNumber), 4));
+        else {alertStack.add(new GlobalAlert("Target reached\nnew target " + targets.get(stageNumber), 4)); globalMoney+=(200*stageNumber);}
       }
     }
     
@@ -135,6 +135,7 @@ void setup() {
   //size(1980/2, 1080/2);
   frameRate(60);
   background(255);
+  resetCosts();
 
   // 0 frame
   collectImages();
@@ -147,6 +148,7 @@ void setup() {
 void newGame() {
   gameWorld = new World();
 
+  resetCosts(); 
   activeSignals.clear();
   worldBuildings.clear();
   alertStack.clear();
@@ -155,7 +157,7 @@ void newGame() {
   firstPauseFrame = true;
   stageNumber = 1;
   globalInterference = 0;
-  globalMoney = 80;
+  globalMoney = 125;
   earnedAmount = 0;
   spentAmount = 0;
   

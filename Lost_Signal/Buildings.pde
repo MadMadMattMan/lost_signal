@@ -1,4 +1,4 @@
-public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() { //<>// //<>//
+public static final ArrayList<BuildingType> testBuilding = new ArrayList<>() { //<>//
   {
     add(BuildingType.test);
   }
@@ -38,7 +38,11 @@ public static final ArrayList<BuildingType> bankBuilding = new ArrayList<>() {
 Building addBuilding(PVector position, BuildingType type) {
   Building newBuilding = newBuilding(position, type);
   if (newBuilding != null) {
-    globalMoney -= buildingCosts.get(type);
+    float oldCost = buildingCosts.get(type);
+    globalMoney -= oldCost;
+    buildingCosts.remove(type);
+    buildingCosts.put(type, oldCost+15);
+    
     if (!worldBuildings.keySet().contains(type))  // if not there, add it
       worldBuildings.put(type, new ArrayList<Building>());
     worldBuildings.get(type).add(newBuilding);
