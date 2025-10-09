@@ -436,12 +436,20 @@ class InfoPanel {
   }
 }
 
+void renderAlerts(boolean update) {
+  GlobalAlert currentAlert = alertStack.peek();
+  if (currentAlert != null)
+    currentAlert.render(update);
+}
+
 class GlobalAlert {
   String message;
   float displayTime;
+  boolean paused;
   
   float spawnTime = -1f;
   float time = 0;
+  float pauseTime = 0;
   float transferTime = 1f;
   float upTime;
   float restY = height/9;
@@ -450,11 +458,24 @@ class GlobalAlert {
   GlobalAlert(String msg, float dt) {
     this.message = msg;
     this.displayTime = dt;
+   
     upTime = displayTime - transferTime;
   }
   
-  void render() {
+  void render(boolean update) {
     if (spawnTime==-1f) spawnTime = millis();
+    if (!update && !paused) {
+      pauseTime = millis();
+      paused = true;
+    }
+    if (!update) {
+      float dTime = (millis()-pauseTime);
+      spawnTime+=dTime;
+      pauseTime = millis();
+    }
+    if (update && paused)
+      paused = false;
+      
     time = (millis()-spawnTime)/1000;
     textSize(70);
     fill(0);
@@ -488,8 +509,8 @@ int seed = -1;
 int grid;
 
 void initializeGround() {
-  if (seed >= 0) // if there is a set seed
-    noiseSeed(seed);
+  seed = round(random(0, 99999));
+  noiseSeed(seed);
   
   // set up the biome map
   biomeColMap.put("rich forest", new PVector(29, 73, 23));

@@ -94,27 +94,37 @@ void mouseReleased() {
 
 // Called when a key click occurs
 void keyPressed() {
-   if (key == '1') 
-     buildMode = BuildingType.test;
-   else if (key == '2') 
-     buildMode = BuildingType.relay;
-   else if (key == '3')
-     buildMode = BuildingType.mine;
-   else if (key == '4')
-     buildMode = BuildingType.lumber;
-   else if (key == '5')
-     buildMode = BuildingType.storage;
-   else if (key == '6')
-     buildMode = BuildingType.factory;
-   else if (key == 'p')
-     globalMoney+=100;
-   else if (key == TAB) {
-     if (buildingMenu == null) buildingMenu = new UIPanel(UIType.buildings); 
-     else {
-       buildingMenu.initalizePanel(false);
-       buildingMenu = null; 
+  if (key == ' ') {
+     isGameOn = !isGameOn;
+     isGamePaused = true;
+     if (isGameOn) {
+       pauseMainMenu.initalizePanel(false); 
+       pauseMainMenu = null;
      }
    }
+   if (isGameOn) {
+     if (key == '1') 
+       buildMode = BuildingType.mine;
+     else if (key == '2') 
+       buildMode = BuildingType.lumber;
+     else if (key == '3')
+       buildMode = BuildingType.relay;
+     else if (key == '4')
+       buildMode = BuildingType.storage;
+     else if (key == '5')
+       buildMode = BuildingType.factory;
+     else if (key == 'p')
+       globalMoney+=100;
+     else if (key == TAB) {
+       if (buildingMenu == null) 
+         buildingMenu = new UIPanel(UIType.buildings); 
+       else {
+         buildingMenu.initalizePanel(false);
+         buildingMenu = null; 
+       }
+     }
+   }
+   
        
    else 
      buildMode = BuildingType.none; 

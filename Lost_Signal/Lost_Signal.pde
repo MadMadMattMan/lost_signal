@@ -17,7 +17,9 @@ public static LinkedList<GlobalAlert> alertStack = new LinkedList<>();
 
 public static BuildingType buildMode = BuildingType.none; // current build target
 
-public static boolean isGameOn = true;
+public static boolean isGameOn = false;
+public static boolean isGamePaused = false;
+static boolean firstPauseFrame = true;
 public static int stageNumber = 1;
 
 /// Interference
@@ -28,12 +30,15 @@ public static float spentAmount = 0;
 
 // Called every frame
 float lastUpdate = 0;
+UIPanel pauseMainMenu;
 
 void draw() {
   //Resets scene
   background(0);
   
   if (isGameOn) {
+    if (!firstPauseFrame) firstPauseFrame = true;
+    
     //updates - in order of rendering layer;
     image(gameWorld.getGroundMap(), 0, 0);
     gameWorld.render();
@@ -53,11 +58,50 @@ void draw() {
     }
     
     updateMouse();
-    renderUI();
-    GlobalAlert currentAlert = alertStack.peek();
-    if (currentAlert != null)
-      currentAlert.render();
-  } 
+    renderGameUI();
+    renderAlerts(true);
+  }
+  else { // game paused
+    PVector buttonTL = new PVector(width/2 - 300, 500);
+    PVector buttonBR = new PVector(width/2 + 300, buttonTL.copy().y+100);
+    if (isGamePaused) {
+      if (firstPauseFrame) {pauseMainMenu = new UIPanel(3); firstPauseFrame = false;}
+      // render paused game
+      image(gameWorld.getGroundMap(), 0, 0);
+            
+      gameWorld.render();
+      renderBuildings();
+      renderSignals();
+      
+      
+      renderGameUI();
+      renderAlerts(false);
+      
+      // blackout mask
+      fill(0, 0, 0, 100); rectMode(CORNERS); rect(0, 0, width, height);
+      
+      // render continue buttons
+      rectMode(CORNERS); fill(100); textAlign(CENTER); 
+      rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+      fill(0); textSize(70);
+      text("CONTINUE", width/2, buttonBR.y-25);
+      
+    }
+    if (firstPauseFrame) {pauseMainMenu = new UIPanel(2); firstPauseFrame = false;}
+    fill(200); textSize(200);
+    text("LOST SIGNAL", width/2, 300);
+    
+    // menu
+    rectMode(CORNERS); textAlign(CENTER);
+    fill(100); textSize(70);
+    rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+    fill(0);
+    text("NEW GAME", width/2, buttonBR.y-25);
+    fill(100);
+    rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+    fill(0);
+    text("EXIT", width/2, buttonBR.y-25);
+  }
 }
 
 // Called once at the start of the game
@@ -68,8 +112,7 @@ void setup() {
   //size(1000, 500);
   frameRate(60);
   background(255);
-  text("Generating Map", 0, 0, width, height);  
-  
+
   // 0 frame
   collectImages();
   
@@ -82,8 +125,14 @@ void newGame() {
   gameWorld = new World();
   activeSignals.clear();
   worldBuildings.clear();
+  alertStack.clear();
+  isGameOn = false;
+  isGamePaused = false;
+  firstPauseFrame = true;
+  stageNumber = 1;
   
   initializeGround();
+  text("Generating Map", 0, 0, width, height);  
   
   float x = random(50, width-50);
   float y = height-50;
@@ -110,4 +159,16 @@ void updateBuildings(boolean tickFrame) {
         b.tickSecond();
     }
   }
+}
+// renders buildings wihtout updating
+void renderBuildings() {
+  for (ArrayList<Building> bList : worldBuildings.values()){
+    for (Building b : bList)
+        b.render();
+  }
+}
+// renders signals without updating
+void renderSignals() {
+  for (Signal s : activeSignals)
+      s.render();
 }

@@ -1,5 +1,6 @@
 /**
-  Formatting bank info
-  pause menu 2/ reset
   tutorial page and start game
+  Formatting bank info
+  balancing income
+  fix placing outside of frame
 */

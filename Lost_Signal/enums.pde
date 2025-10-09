@@ -28,7 +28,11 @@ public enum ButtonAction {
   
   buildMenu,
   statsMenu,
-  pauseMenu,
+  
+  cont,
+  newGame,
+  help,
+  quit,
   
   a,
   b,
@@ -40,6 +44,7 @@ public enum ButtonAction {
 
 // enum for the type of ui
 public enum UIType {
+  menu,
   buildings,
   resources,
   stats,

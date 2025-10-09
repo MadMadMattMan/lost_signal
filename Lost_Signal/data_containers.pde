@@ -54,26 +54,30 @@ public class CollisionData{
 }
 
 public class Button {
-  public InfoPanel infoPanel;
-  public UIPanel UIPanel;
-  
   public ButtonAction type;
+  
+  public InfoPanel infoPanel;
+  
+  public UIPanel UIPanel;
+  public boolean offGame;
+  
   
   
   Button(InfoPanel panel, ButtonAction type) {
     this.infoPanel = panel;
     this.type = type;
   }
-  Button(UIPanel panel, ButtonAction type) {
+  Button(UIPanel panel, ButtonAction type, boolean offGame) {
     this.UIPanel = panel;
     this.type = type;
+    this.offGame = offGame;
   }
   
   public void click() {
-    if (infoPanel != null)
+    if (UIPanel != null && isGameOn || offGame)
+        UIPanel.clickEvent(type);
+    else if (isGameOn)
       infoPanel.clickEvent(type);
-    else
-      UIPanel.clickEvent(type);
   }
 }
 

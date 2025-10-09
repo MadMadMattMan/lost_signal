@@ -1,5 +1,5 @@
 float leftUIXOffset = 0;
-void renderUI() {
+void renderGameUI() {
   
   if (buildingMenu!=null) buildingMenu.render();
   
@@ -9,7 +9,8 @@ void renderUI() {
   fill(0);
   text("Interference " + globalInterference, 10 + leftUIXOffset, 35);
   text("Money $" + formatDp(globalMoney), 10 + leftUIXOffset, 65);
-  text("'TAB' for build menu", 10 + leftUIXOffset, height - 10);
+  text("'SPACE' for pause menu", 10 + leftUIXOffset, height-10);
+  text("'TAB' for build menu", 10 + leftUIXOffset, height - 40);
   textAlign(RIGHT);
   text("Stage " + stageNumber, width-10, 35);
   text("Goal:\nEarn $" + targets.get(stageNumber), width-10, 65);
@@ -28,6 +29,7 @@ UIPanel buildingMenu = null;
 
 class UIPanel {
   UIType type;
+  int buttonCount;
   
   HashMap<ButtonAction, Button> buttons = new HashMap<>();
   float buttonSize = 100, buttonSpacing = 90, buttonStep = buttonSize+buttonSpacing;
@@ -43,31 +45,58 @@ class UIPanel {
     setupUI();
     initalizePanel(true);
   }
+  UIPanel(int buttonCount) {
+    type = UIType.menu;
+    this.buttonCount = buttonCount;
+    setupUI();
+    initalizePanel(true);
+  }
 
   void setupUI() {
-    buttons.put(ButtonAction.a, new Button(this, ButtonAction.a));
-    buttons.put(ButtonAction.b, new Button(this, ButtonAction.b));
-    buttons.put(ButtonAction.c, new Button(this, ButtonAction.c));
-    buttons.put(ButtonAction.d, new Button(this, ButtonAction.d));
-    buttons.put(ButtonAction.e, new Button(this, ButtonAction.e));
+    buttons.put(ButtonAction.a, new Button(this, ButtonAction.a, false));
+    buttons.put(ButtonAction.b, new Button(this, ButtonAction.b, false));
+    buttons.put(ButtonAction.c, new Button(this, ButtonAction.c, false));
+    buttons.put(ButtonAction.d, new Button(this, ButtonAction.d, false));
+    buttons.put(ButtonAction.e, new Button(this, ButtonAction.e, false));
+    
+    buttons.put(ButtonAction.cont, new Button(this, ButtonAction.cont, true));
+    buttons.put(ButtonAction.newGame, new Button(this, ButtonAction.newGame, true));
+    buttons.put(ButtonAction.help, new Button(this, ButtonAction.help, true));
+    buttons.put(ButtonAction.quit, new Button(this, ButtonAction.quit, true));
   }
   
   void initalizePanel(boolean state) {
     if (state) { // setup
-      PVector buttonAltPos = buttonPos.copy().add(new PVector(buttonSize, buttonSize));
-      colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.a)));
-      buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
-      colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.b)));
-      buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
-      colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.c)));   
-      buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
-      colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.d)));  
-      buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
-      colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.e)));
-      buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
-      buttonPos = buttonPosDefault.copy();
-      
-      if (type == UIType.buildings) leftUIXOffset += bottomRight.x;
+      if (type == UIType.buildings) {
+        PVector buttonAltPos = buttonPos.copy().add(new PVector(buttonSize, buttonSize));
+        colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.a)));
+        buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
+        colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.b)));
+        buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
+        colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.c)));   
+        buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
+        colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.d)));  
+        buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
+        colliders.add(gameWorld.createCollider(buttonPos.copy(), buttonAltPos.copy(), buttons.get(ButtonAction.e)));
+        buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
+        buttonPos = buttonPosDefault.copy();
+        
+        colliders.add(gameWorld.createCollider(topLeft.copy(), bottomRight.copy(), false));
+        leftUIXOffset += bottomRight.x;
+      }
+      if (type == UIType.menu) {
+         PVector buttonTL = new PVector(width/2 - 300, 500);
+         PVector buttonBR = new PVector(width/2 + 300, buttonTL.copy().y+100);
+         if (buttonCount == 2) {
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.newGame)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.quit)));
+         }
+         if (buttonCount == 3) {
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.cont)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.newGame)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.quit)));
+         }  
+      }
     }
     else { // destroy
       if (type == UIType.buildings) leftUIXOffset -= bottomRight.x;
@@ -90,8 +119,13 @@ class UIPanel {
       else
         alertStack.add(new GlobalAlert("Need to be on stage 2\nto use the factory", 4));
       break;
+      case cont: isGameOn = true; isGamePaused = true; initalizePanel(false); pauseMainMenu = null; break;
+      case newGame: newGame(); isGameOn = true; isGamePaused = true; break;
+      case help: break;
+      case quit: exit(); break;
       default: println("invalid uiButton pressed");
     }
+    
   }
   
   void render() {
@@ -115,7 +149,7 @@ class UIPanel {
       text("gathers resources\nfrom greenland", center.copy().x, imageY + buttonSize + 15);
       image(relayIcon, buttonPos.copy().x, imageY+=buttonStep, buttonSize, buttonSize);
       text("relay: $" + buildingCosts.get(BuildingType.relay), center.copy().x, imageY);
-      text("extends a signals\ntravel", center.copy().x, imageY + buttonSize + 15);
+      text("extends/redirects\na signals travel", center.copy().x, imageY + buttonSize + 15);
       image(storageIcon, buttonPos.copy().x, imageY+=buttonStep, buttonSize, buttonSize);
       text("storage: $" + buildingCosts.get(BuildingType.storage), center.copy().x, imageY);
       text("stores resources", center.copy().x, imageY + buttonSize + 15);
