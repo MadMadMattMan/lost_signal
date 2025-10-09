@@ -48,7 +48,6 @@ public class FactoryBuilding implements Building {
   
   void tickFrame() { // per frame method
     render();
-    if (renderInfo) infoPanel.render();
     
     for (Signal s : toSend) {
       emit(s);
@@ -70,7 +69,7 @@ public class FactoryBuilding implements Building {
         receivedSignal.destroy = true;
       }
       if (fuelResources.contains(incomingType)) {
-        fuel += resourceValue.get(incomingType)*10*amount;
+        fuel += amount;
         
         receivedSignal.destroy = true;
       }
@@ -80,7 +79,7 @@ public class FactoryBuilding implements Building {
   }
   void produce() {
     if (input1 != null && input2 != null) {
-      while(input1Count >= input1Cost && input2Count >= input2Cost && fuel >= 20) {
+      while(input1Count >= input1Cost && input2Count >= input2Cost && fuel >= 15) {
          input1Count-=input1Cost;
          input2Count-=input2Cost;
          fuel-=20;
@@ -114,10 +113,13 @@ public class FactoryBuilding implements Building {
   void setAim(PVector newAim) {target = newAim;}
   void toggleInfo() {
     renderInfo = !renderInfo; // toggle bool
-    
-    if (renderInfo) // takes a new snapshot of data
+
+    if (renderInfo) { // takes a new snapshot of data
+      buildingUI.remove(infoPanel);
       infoPanel = new InfoPanel(getBuildingData());
-      
+      buildingUI.add(infoPanel);
+    }
+    else {buildingUI.remove(infoPanel);}
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {}

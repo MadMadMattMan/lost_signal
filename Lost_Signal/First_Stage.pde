@@ -78,7 +78,6 @@ public class GathererBuilding implements Building {
   
   void tickFrame() { // per frame method
     render();
-    if (renderInfo) infoPanel.render();
     
     for (Signal s : toSend) {
       emit(s);
@@ -123,10 +122,13 @@ public class GathererBuilding implements Building {
   void setAim(PVector newAim) {target = newAim;}
   void toggleInfo() {
     renderInfo = !renderInfo; // toggle bool
-    
-    if (renderInfo) // takes a new snapshot of data
+
+    if (renderInfo) { // takes a new snapshot of data
+      buildingUI.remove(infoPanel);
       infoPanel = new InfoPanel(getBuildingData());
-      
+      buildingUI.add(infoPanel);
+    }
+    else {buildingUI.remove(infoPanel);}
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {
@@ -177,7 +179,6 @@ public class RelayBuilding implements Building {
   
   void tickFrame() {
     render();
-    if (renderInfo) infoPanel.render();
     for (Signal s : toSend)
       emit(s);
     toSend.clear();
@@ -216,10 +217,13 @@ public class RelayBuilding implements Building {
   void setAim(PVector newAim) {target = newAim; if (infoPanel!=null) infoPanel.updateInfo(target!=null);}
   void toggleInfo() {
     renderInfo = !renderInfo; // toggle bool
-    
-    if (renderInfo) // takes a new snapshot of data
+
+    if (renderInfo) { // takes a new snapshot of data
+      buildingUI.remove(infoPanel);
       infoPanel = new InfoPanel(getBuildingData());
-      
+      buildingUI.add(infoPanel);
+    }
+    else {buildingUI.remove(infoPanel);}
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {
@@ -279,7 +283,6 @@ public class StorageBuilding implements Building {
   
   void tickFrame() { // per frame method
     render();
-    if (renderInfo) infoPanel.render();
     
     for (Signal s : toSend) {
       emit(s);
@@ -322,10 +325,13 @@ public class StorageBuilding implements Building {
   void setAim(PVector newAim) {target = newAim;}
   void toggleInfo() {
     renderInfo = !renderInfo; // toggle bool
-    
-    if (renderInfo) // takes a new snapshot of data
+
+    if (renderInfo) { // takes a new snapshot of data
+      buildingUI.remove(infoPanel);
       infoPanel = new InfoPanel(getBuildingData());
-      
+      buildingUI.add(infoPanel);
+    }
+    else {buildingUI.remove(infoPanel);}
     infoPanel.initialize(renderInfo);
   }
   void toggleMode() {

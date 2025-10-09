@@ -1,6 +1,7 @@
 // Image gathering
 PImage mineIcon, relayIcon, factoryIcon, lumberIcon, storageIcon, bankIcon;
 PImage xIcon, toggleIcon, nextIcon, expandIcon, checkboxIcon, checkedboxIcon, highlightedCheckedboxIcon;
+PImage tutorialIntro, tutorialBuildings, tutorialCrafting;
 void collectImages() {
   mineIcon = loadImage("assets/buildings/mine.png"); 
   relayIcon = loadImage("assets/buildings/relay.png"); 
@@ -17,6 +18,10 @@ void collectImages() {
   checkboxIcon = loadImage("assets/ui/checkbox.png");
   checkedboxIcon = loadImage("assets/ui/checkedbox.png");
   highlightedCheckedboxIcon = loadImage("assets/ui/highlightedcheckedbox.png");
+  
+  tutorialIntro = loadImage("assets/tutorial/intro.png");
+  tutorialBuildings = loadImage("assets/tutorial/buildings.png");
+  tutorialCrafting = loadImage("assets/tutorial/crafting.png");
 }
 
 
@@ -153,8 +158,8 @@ class InfoPanel {
     switch (action) {
       case destroy: initialize(false); gameWorld.removeBuilding(type, building); break;
       case toggle: building.toggleMode(); break;
-      case next: infoPageNum++; if(infoPageNum>4)infoPageNum=0; break;
-      case back: infoPageNum--; if(infoPageNum<0)infoPageNum=1; break;
+      case next: infoPageNum++; if(infoPageNum>5)infoPageNum=0; break;
+      case back: infoPageNum--; if(infoPageNum<0)infoPageNum=5; break;
       case expand: {
         if (expandedPanel==null)
           expandedPanel = new InfoPanel(topLeft, leftSide, input1, input2, this); 
@@ -230,7 +235,8 @@ class InfoPanel {
       }
     }
     else { // destroy
-    if (expandedPanel!=null) expandedPanel.initialize(false);
+      buildingUI.remove(this);
+      if (expandedPanel!=null) expandedPanel.initialize(false);
       for (Collider c : colliders) {
         gameWorld.removeCollider(c);
       }
@@ -281,16 +287,16 @@ class InfoPanel {
         textAlign(LEFT);
         textSize(13);
         text("Input 1:", textXOffset, topLeft.y + (yOffset+=13));
-        text(input1+": "+input1Count, textXOffset, topLeft.y + (yOffset+=13));
+        text(input1+": "+ formatDp(2, input1Count), textXOffset, topLeft.y + (yOffset+=13));
         text("Input 2:", textXOffset, topLeft.y + (yOffset+=13));
-        text(input2+": "+input2Count, textXOffset, topLeft.y + (yOffset+=13));
+        text(input2+": "+ formatDp(2, input2Count), textXOffset, topLeft.y + (yOffset+=13));
         text("Fuel:", textXOffset, topLeft.y + (yOffset+=13));
-        text(formatDp(fuelValue), textXOffset, topLeft.y + (yOffset+=11));
+        text(formatDp(2, fuelValue), textXOffset, topLeft.y + (yOffset+=11));
         
         textAlign(RIGHT);
         textSize(12);
         text("Sell:", destroyButtonPos.x, destroyButtonAlt.y-13);
-        text("$"+formatDp(sellPrice), destroyButtonPos.x, destroyButtonAlt.y-1);
+        text("$"+formatDp(2, sellPrice), destroyButtonPos.x, destroyButtonAlt.y-1);
         textAlign(LEFT);
       }
       else if (type != BuildingType.bank) {
@@ -340,7 +346,7 @@ class InfoPanel {
         }        
         else {
           textSize(15);
-          String txt = resource.toString() + ": " + formatDp(prodRate) + "/s";
+          String txt = resource.toString() + ": " + formatDp(2, prodRate) + "/s";
           float txtWidth = textWidth(txt);
           if (txtWidth > xySize.x) {
             float actualWidth = txtWidth;
@@ -351,7 +357,7 @@ class InfoPanel {
         textAlign(RIGHT);
         textSize(12);
         text("Sell:", destroyButtonPos.x, destroyButtonAlt.y-13);
-        text("$"+formatDp(sellPrice), destroyButtonPos.x, destroyButtonAlt.y-1);
+        text("$"+formatDp(2, sellPrice), destroyButtonPos.x, destroyButtonAlt.y-1);
       }
       else {
        image(nextIcon, (int)(destroyButtonPos.x), (int)(destroyButtonPos.y), (int)destroyButtonSize, (int)destroyButtonSize);
@@ -360,33 +366,37 @@ class InfoPanel {
        textSize(13);
        textAlign(CENTER);
        text("Send signals\nhere for sale", center.x, topLeft.y + (yOffset+=13));
+       text(""+(int)(infoPageNum+1), center.x, bottomRight.y - 2);
        yOffset+=30;
        textAlign(LEFT);
        if (infoPageNum == 0)
-         text(" Coal: $" + resourceValue.get(ResourceType.coal) + 
-              "\n Copper: $" + resourceValue.get(ResourceType.copper) + 
-              "\n Iron: $" + resourceValue.get(ResourceType.iron)
+         text(" Coal: $" + formatDp(2, resourceValue.get(ResourceType.coal)) + 
+              "\n Copper: $" + formatDp(2, resourceValue.get(ResourceType.copper))+ 
+              "\n Iron: $" + formatDp(2, resourceValue.get(ResourceType.iron))
               , topLeft.x, topLeft.y + yOffset);
        if (infoPageNum == 1)
-         text(" Wood: $" + resourceValue.get(ResourceType.wood) +
-              "\n Leaves: $" + resourceValue.get(ResourceType.leaves) + 
-              "\n Sap: $" + resourceValue.get(ResourceType.sap)
+         text(" Wood: $" + formatDp(2, resourceValue.get(ResourceType.wood)) +
+              "\n Leaves: $" + formatDp(2, resourceValue.get(ResourceType.leaves)) + 
+              "\n Sap: $" + formatDp(2, resourceValue.get(ResourceType.sap))
               , topLeft.x, topLeft.y + yOffset);
-      else if (infoPageNum == 2)
-         text(" emagnet: $" + resourceValue.get(ResourceType.wood) +
-              "\n conductor: $" + resourceValue.get(ResourceType.leaves) + 
-              "\n carbonFiber: $" + resourceValue.get(ResourceType.sap)
+      else if (infoPageNum == 2) 
+         text(" emag: $" + formatDp(2, resourceValue.get(ResourceType.wood)) +
+              "\n conductor:\n $" + formatDp(2, resourceValue.get(ResourceType.leaves))
               , topLeft.x, topLeft.y + yOffset);
       else if (infoPageNum == 3)
-         text(" charcoal: $" + resourceValue.get(ResourceType.wood) +
-              "\n planks: $" + resourceValue.get(ResourceType.leaves) + 
-              "\n nails: $" + resourceValue.get(ResourceType.sap)
+         text(" planks: $" + formatDp(2, resourceValue.get(ResourceType.leaves)) +
+              "\n charcoal:\n $" + formatDp(2, resourceValue.get(ResourceType.wood))
               , topLeft.x, topLeft.y + yOffset);
       else if (infoPageNum == 4)
          text(" lamp: $" + resourceValue.get(ResourceType.wood) +
-              "\n curcuit: $" + resourceValue.get(ResourceType.leaves)
+              "\n curcuit:\n $" + resourceValue.get(ResourceType.leaves)              
+              , topLeft.x, topLeft.y + yOffset);
+      else if (infoPageNum == 5)
+         text(" nails: $" + formatDp(2, resourceValue.get(ResourceType.sap)) + 
+              "\n carbonFiber:\n $" + formatDp(2, resourceValue.get(ResourceType.sap))
               , topLeft.x, topLeft.y + yOffset);
       }
+      
       
       if (expandedPanel != null) expandedPanel.render();
     }
@@ -450,7 +460,7 @@ class GlobalAlert {
   float spawnTime = -1f;
   float time = 0;
   float pauseTime = 0;
-  float transferTime = 1f;
+  float transferTime = 0.5f;
   float upTime;
   float restY = height/9;
   float xPos = width/2;
@@ -495,8 +505,9 @@ class GlobalAlert {
   }
 }
 
-String formatDp(float value) {
-  float rounded = round(value*100)/100f;
+String formatDp(int dp, float value) {
+  float multi = pow(10, dp);
+  float rounded = round(value*multi)/multi;
   if (rounded >= 10000)
     return "9999+";
   return ""+rounded;
@@ -542,7 +553,7 @@ void initializeGround() {
     gameWorld.setGroundMap(generateGridGround());
   }
     
-  println("\n\nGenerated map using " + algorithmType + " with the seed " + noise(0));
+  println("\n\nGenerated map with the seed " + seed);
 }
 
 HashMap<String, PVector> biomeColMap = new HashMap<>();

@@ -132,9 +132,14 @@ class World { // The main class that acts as the game world - contains global va
   
   /// removes a collider from the world
   void removeCollider(Collider c) {
+    try {
     ArrayList<Integer> indecies = c.colliderIndecies;
     for (int i : indecies)
       worldColliders.get(i).remove(c);
+    }
+    catch (Exception e){
+      println("null remover");
+    }
   }
   
   /// removes a building from the world
@@ -164,6 +169,7 @@ class World { // The main class that acts as the game world - contains global va
     for (int j = (int)cellStep.y; j <= height; j += cellStep.y) {
       line(0, j, width, j);
     }
+    stroke(0);
   }
   
   

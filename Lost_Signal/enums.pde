@@ -46,8 +46,7 @@ public enum ButtonAction {
 public enum UIType {
   menu,
   buildings,
-  resources,
-  stats,
+  help,
 }
 
 // enum for resource types
@@ -66,7 +65,7 @@ public enum ResourceType {
   
   // 1
   steel, // fuel + coal + iron
-  emagnet, // fuel + iron + copper
+  emag, // fuel + iron + copper
   conductor, // fuel + coal + copper
   carbonFiber,  // fuel + coal + leaves
   charcoal, // fuel + fuel + lumber - equiv to coal
@@ -76,8 +75,8 @@ public enum ResourceType {
   circuit, // fuel + copper + sap
   
   // 2
-  pulseCore, // steel + emagnet
-  fluxium,   // conductor + emagnet
+  pulseCore, // steel + emag
+  fluxium,   // conductor + emag
   pyroSteel, // conductor + steel
   
   // ruined
@@ -87,9 +86,11 @@ public enum ResourceType {
 public static ArrayList<Float> targets = new ArrayList<>();
 static {
   targets.add(0, 0f);
-  targets.add(1, 50f);
-  targets.add(2, 1000f);
-  targets.add(3, 50000f);
+  targets.add(1, 25f);
+  targets.add(2, 500f);
+  targets.add(3, 1000f);
+  targets.add(4, 10000f);
+  targets.add(5, 1000000f);
 }
 
 public static HashMap<ResourceType, PVector> resourceSignalColor = new HashMap<>();
@@ -105,7 +106,7 @@ static {
   resourceSignalColor.put(ResourceType.sap, new PVector(150, 150, 20));
   
   resourceSignalColor.put(ResourceType.steel, new PVector(33, 33, 35));
-  resourceSignalColor.put(ResourceType.emagnet, new PVector(20, 50, 100));
+  resourceSignalColor.put(ResourceType.emag, new PVector(20, 50, 100));
   resourceSignalColor.put(ResourceType.conductor, new PVector(100, 50, 20));
   resourceSignalColor.put(ResourceType.carbonFiber, new PVector(175, 175, 200));
   resourceSignalColor.put(ResourceType.charcoal, new PVector(200, 200, 200));
@@ -132,23 +133,24 @@ public static HashMap<ResourceType, Float> resourceValue = new HashMap<>();
 static {
   resourceValue.put(ResourceType.none, 0f);
   
-  resourceValue.put(ResourceType.coal, 0.015f);
-  resourceValue.put(ResourceType.iron, 0.020f);
-  resourceValue.put(ResourceType.copper, 0.020f);
+  resourceValue.put(ResourceType.coal, 0.023f);
+  resourceValue.put(ResourceType.iron, 0.026f);
+  resourceValue.put(ResourceType.copper, 0.025f);
   
-  resourceValue.put(ResourceType.wood, 0.0175f);
-  resourceValue.put(ResourceType.leaves, 0.008f);
-  resourceValue.put(ResourceType.sap, 0.0215f);
+  resourceValue.put(ResourceType.wood, 0.027f);
+  resourceValue.put(ResourceType.leaves, 0.011f);
+  resourceValue.put(ResourceType.sap, 0.033f);
   
-  resourceValue.put(ResourceType.steel, 0.3f);
-  resourceValue.put(ResourceType.emagnet, 0.3f);
-  resourceValue.put(ResourceType.conductor, 0.3f);
-  resourceValue.put(ResourceType.carbonFiber, 0.3f);
-  resourceValue.put(ResourceType.charcoal, 0.3f);
-  resourceValue.put(ResourceType.planks, 0.3f);
-  resourceValue.put(ResourceType.nails, 0.3f);
-  resourceValue.put(ResourceType.lamp, 0.3f);
-  resourceValue.put(ResourceType.circuit, 0.3f);
+  resourceValue.put(ResourceType.steel, 0.33f);
+  resourceValue.put(ResourceType.emag, 1.66f);
+  resourceValue.put(ResourceType.conductor, 0.75f);
+  resourceValue.put(ResourceType.carbonFiber, 0.4f);
+  resourceValue.put(ResourceType.charcoal, 0.26f);
+  resourceValue.put(ResourceType.planks, 0.33f);
+  resourceValue.put(ResourceType.nails, 0.12f);
+  resourceValue.put(ResourceType.lamp, 1.00f);
+  resourceValue.put(ResourceType.circuit, 1.85f);
+  resourceValue.put(ResourceType.scrap, 0.10f);
 }
 public static HashMap<ResourceType, Float> resourceSpeed = new HashMap<>();
 static {

@@ -94,11 +94,11 @@ void mouseReleased() {
 
 // Called when a key click occurs
 void keyPressed() {
-  if (key == ' ') {
+  if (key == ' ' && (isGameOn || isGamePaused)) {
      isGameOn = !isGameOn;
      isGamePaused = true;
-     if (isGameOn) {
-       pauseMainMenu.initalizePanel(false); 
+     if (isGameOn && tutorial == null) {
+       pauseMainMenu.initalize(false); 
        pauseMainMenu = null;
      }
    }
@@ -111,15 +111,19 @@ void keyPressed() {
        buildMode = BuildingType.relay;
      else if (key == '4')
        buildMode = BuildingType.storage;
-     else if (key == '5')
-       buildMode = BuildingType.factory;
+     else if (key == '5') { 
+     if (stageNumber > 1) 
+        buildMode = BuildingType.factory; 
+      else
+        alertStack.add(new GlobalAlert("Need to be on stage 2\nto use the factory", 3));
+      }
      else if (key == 'p')
        globalMoney+=100;
      else if (key == TAB) {
        if (buildingMenu == null) 
          buildingMenu = new UIPanel(UIType.buildings); 
        else {
-         buildingMenu.initalizePanel(false);
+         buildingMenu.initalize(false);
          buildingMenu = null; 
        }
      }
@@ -171,7 +175,8 @@ void placingGraphic(int buildCost) {
   textSize(20);
   textAlign(CENTER);
   text("Placing " + buildMode.toString(), holdLocation.x, holdLocation.y - 30);
-  text("Cost $" + formatDp(buildCost), holdLocation.x, holdLocation.y + 50);
+  text("Cost $" + formatDp(2, buildCost), holdLocation.x, holdLocation.y + 50);
+  stroke(0);
   }
   
 boolean checkPlacement(PVector location, PVector size) {

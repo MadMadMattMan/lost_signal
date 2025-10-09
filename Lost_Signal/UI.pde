@@ -8,14 +8,14 @@ void renderGameUI() {
   textAlign(LEFT);
   fill(0);
   text("Interference " + globalInterference, 10 + leftUIXOffset, 35);
-  text("Money $" + formatDp(globalMoney), 10 + leftUIXOffset, 65);
+  text("Money $" + formatDp(2, globalMoney), 10 + leftUIXOffset, 65);
   text("'SPACE' for pause menu", 10 + leftUIXOffset, height-10);
   text("'TAB' for build menu", 10 + leftUIXOffset, height - 40);
   textAlign(RIGHT);
   text("Stage " + stageNumber, width-10, 35);
   text("Goal:\nEarn $" + targets.get(stageNumber), width-10, 65);
   textSize(20);
-  text("$" + formatDp(earnedAmount) + "/$" + targets.get(stageNumber), width-10, 125);
+  text("$" + formatDp(2, earnedAmount) + "/$" + targets.get(stageNumber), width-10, 125);
   
   // bottom info
   if (buildMode != null && buildMode != BuildingType.none) {
@@ -32,24 +32,26 @@ class UIPanel {
   int buttonCount;
   
   HashMap<ButtonAction, Button> buttons = new HashMap<>();
-  float buttonSize = 100, buttonSpacing = 90, buttonStep = buttonSize+buttonSpacing;
+  float buttonSize = height/12, buttonSpacing = height/12, buttonStep = buttonSize+buttonSpacing;
   
   PVector topLeft = new PVector(5, 5), bottomRight = new PVector(250, height-5), center = new PVector((topLeft.x + bottomRight.x)/2, ((topLeft.y + bottomRight.y)/2)); 
-  PVector buttonPosDefault = new PVector(center.copy().x - buttonSize/2, topLeft.y + 120), buttonPos = buttonPosDefault.copy();
+  PVector buttonPosDefault = new PVector(center.copy().x - buttonSize/2, topLeft.y + 100), buttonPos = buttonPosDefault.copy();
   ArrayList<Collider> colliders = new ArrayList<>();
+  
+  PVector tutPos = new PVector(width*(8.5f/10), height*(9f/10));
   
   float animationTime = 1f;
   
   UIPanel(UIType type){
     this.type = type;
     setupUI();
-    initalizePanel(true);
+    initalize(true);
   }
   UIPanel(int buttonCount) {
     type = UIType.menu;
     this.buttonCount = buttonCount;
     setupUI();
-    initalizePanel(true);
+    initalize(true);
   }
 
   void setupUI() {
@@ -63,9 +65,10 @@ class UIPanel {
     buttons.put(ButtonAction.newGame, new Button(this, ButtonAction.newGame, true));
     buttons.put(ButtonAction.help, new Button(this, ButtonAction.help, true));
     buttons.put(ButtonAction.quit, new Button(this, ButtonAction.quit, true));
+    buttons.put(ButtonAction.next, new Button(this, ButtonAction.next, true));
   }
   
-  void initalizePanel(boolean state) {
+  void initalize(boolean state) {
     if (state) { // setup
       if (type == UIType.buildings) {
         PVector buttonAltPos = buttonPos.copy().add(new PVector(buttonSize, buttonSize));
@@ -81,22 +84,29 @@ class UIPanel {
         buttonPos.y+=buttonStep; buttonAltPos.y+=buttonStep;
         buttonPos = buttonPosDefault.copy();
         
-        colliders.add(gameWorld.createCollider(topLeft.copy(), bottomRight.copy(), false));
         leftUIXOffset += bottomRight.x;
       }
-      if (type == UIType.menu) {
-         PVector buttonTL = new PVector(width/2 - 300, 500);
-         PVector buttonBR = new PVector(width/2 + 300, buttonTL.copy().y+100);
+      else if (type == UIType.menu) {
+         PVector buttonSize = new PVector(width/8, height/10);
+         PVector buttonTL = new PVector(width/2 - buttonSize.x, height * (5f/10));
+         PVector buttonBR = new PVector(width/2 + buttonSize.x, buttonTL.copy().y+buttonSize.y);
          if (buttonCount == 2) {
-           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.newGame)));
-           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.quit)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=(buttonSize.y+10)), new PVector(buttonBR.x, buttonBR.y+=(buttonSize.y+10)), buttons.get(ButtonAction.newGame)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=(buttonSize.y+10)), new PVector(buttonBR.x, buttonBR.y+=(buttonSize.y+10)), buttons.get(ButtonAction.quit)));
          }
          if (buttonCount == 3) {
-           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.cont)));
-           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.newGame)));
-           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=150), new PVector(buttonBR.x, buttonBR.y+=150), buttons.get(ButtonAction.quit)));
-         }  
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=(buttonSize.y+10)), new PVector(buttonBR.x, buttonBR.y+=(buttonSize.y+10)), buttons.get(ButtonAction.cont)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=(buttonSize.y+10)), new PVector(buttonBR.x, buttonBR.y+=(buttonSize.y+10)), buttons.get(ButtonAction.newGame)));
+           colliders.add(gameWorld.createCollider(new PVector(buttonTL.x, buttonTL.y+=(buttonSize.y+10)), new PVector(buttonBR.x, buttonBR.y+=(buttonSize.y+10)), buttons.get(ButtonAction.quit)));
+         }
+         
+         // help
+         colliders.add(gameWorld.createCollider(tutPos.copy(), new PVector(width, height), buttons.get(ButtonAction.help)));
       }
+      else if (type == UIType.help) {
+         println("help button");
+         colliders.add(gameWorld.createCollider(new PVector(0, 0), new PVector(width, height), buttons.get(ButtonAction.next)));         
+       }
     }
     else { // destroy
       if (type == UIType.buildings) leftUIXOffset -= bottomRight.x;
@@ -117,11 +127,12 @@ class UIPanel {
       if (stageNumber > 1) 
         buildMode = BuildingType.factory; 
       else
-        alertStack.add(new GlobalAlert("Need to be on stage 2\nto use the factory", 4));
+        alertStack.add(new GlobalAlert("Need to be on stage 2\nto use the factory", 3));
       break;
-      case cont: isGameOn = true; isGamePaused = true; initalizePanel(false); pauseMainMenu = null; break;
+      case cont: isGameOn = true; isGamePaused = true; initalize(false); pauseMainMenu = null; break;
       case newGame: newGame(); isGameOn = true; isGamePaused = true; break;
-      case help: break;
+      case help: toggleTutorial(true); break;
+      case next: tutPage++; break;
       case quit: exit(); break;
       default: println("invalid uiButton pressed");
     }
@@ -158,5 +169,34 @@ class UIPanel {
       text("factory: $" + buildingCosts.get(BuildingType.factory), center.copy().x, imageY);
       text("combines resources\ninto better ones", center.copy().x, imageY + buttonSize + 15);
     }
+    if (type == UIType.menu) {
+      rectMode(CORNERS);
+      fill(200);
+      rect(tutPos.x, tutPos.y, width, height);
+      textAlign(LEFT); fill(0);
+      text("Tutorial", tutPos.x + 50, height - 25);
+    }
+    if (type == UIType.help) {
+      rectMode(CORNERS);
+      fill(200);
+      rect(tutPos.x, height/2 - 50, width, height/2 + 50);
+      textAlign(LEFT); fill(0); textSize(50);
+      text("Next", tutPos.x + 50, height/2 + 25);
+    }
+  }
+}
+void toggleTutorial(boolean state) {
+  if (state) {
+    pauseMainMenu.initalize(false); 
+    pauseMainMenu = null;
+    tutorial = new UIPanel(UIType.help);
+  }
+  else {
+    tutorial.initalize(false); 
+    tutorial = null;
+    
+    firstPauseFrame = true;
+    stageNumber = 1;
+    pauseMainMenu = new UIPanel(UIType.menu);
   }
 }

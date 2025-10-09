@@ -14,6 +14,7 @@ public static HashMap<BuildingType, ArrayList<Building>> worldBuildings = new Ha
 public static Building theBank;
 public static ArrayList<InfoPanel> openPanels = new ArrayList<>(); // List with every open panel
 public static LinkedList<GlobalAlert> alertStack = new LinkedList<>();
+public static ArrayList<InfoPanel> buildingUI = new ArrayList<>();
 
 public static BuildingType buildMode = BuildingType.none; // current build target
 
@@ -31,6 +32,8 @@ public static float spentAmount = 0;
 // Called every frame
 float lastUpdate = 0;
 UIPanel pauseMainMenu;
+UIPanel tutorial;
+int tutPage = 0;
 
 void draw() {
   //Resets scene
@@ -53,17 +56,22 @@ void draw() {
       globalInterference = activeSignals.size()/7.5f;
       if (targets.get(stageNumber) < earnedAmount) {
         stageNumber++;
-        alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 4));
+        if (stageNumber == 2) alertStack.add(new GlobalAlert("Target reached\nNew buildings unlocked", 4));
+        else if (stageNumber == 5) alertStack.add(new GlobalAlert("Quota complete\nyou win!", 4));
+        else alertStack.add(new GlobalAlert("Target reached\nnew target " + targets.get(stageNumber), 4));
       }
     }
     
     updateMouse();
+    renderBuildingUI();
     renderGameUI();
     renderAlerts(true);
   }
-  else { // game paused
-    PVector buttonTL = new PVector(width/2 - 300, 500);
-    PVector buttonBR = new PVector(width/2 + 300, buttonTL.copy().y+100);
+  else if (tutorial == null) { // game paused
+    PVector buttonSize = new PVector(width/8, height/10);
+    PVector buttonTL = new PVector(width/2 - buttonSize.x, height * (5f/10));
+    PVector buttonBR = new PVector(width/2 + buttonSize.x, buttonTL.copy().y+buttonSize.y);
+    
     if (isGamePaused) {
       if (firstPauseFrame) {pauseMainMenu = new UIPanel(3); firstPauseFrame = false;}
       // render paused game
@@ -82,25 +90,40 @@ void draw() {
       
       // render continue buttons
       rectMode(CORNERS); fill(100); textAlign(CENTER); 
-      rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+      rect(buttonTL.x, buttonTL.y+=(buttonSize.y+10), buttonBR.x, buttonBR.y+=(buttonSize.y+10));
       fill(0); textSize(70);
       text("CONTINUE", width/2, buttonBR.y-25);
       
     }
     if (firstPauseFrame) {pauseMainMenu = new UIPanel(2); firstPauseFrame = false;}
-    fill(200); textSize(200);
+    pauseMainMenu.render();
+    fill(200); textSize(200); textAlign(CENTER);
     text("LOST SIGNAL", width/2, 300);
     
     // menu
     rectMode(CORNERS); textAlign(CENTER);
     fill(100); textSize(70);
-    rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+    rect(buttonTL.x, buttonTL.y+=(buttonSize.y+10), buttonBR.x, buttonBR.y+=(buttonSize.y+10));
     fill(0);
     text("NEW GAME", width/2, buttonBR.y-25);
     fill(100);
-    rect(buttonTL.x, buttonTL.y+=150, buttonBR.x, buttonBR.y+=150);
+    rect(buttonTL.x, buttonTL.y+=(buttonSize.y+10), buttonBR.x, buttonBR.y+=(buttonSize.y+10));
     fill(0);
     text("EXIT", width/2, buttonBR.y-25);
+  }
+  else { // tutorial    
+  
+    if (tutPage == 0)
+      image(tutorialIntro, 0, 0, width, height);
+    else if (tutPage == 1)
+      image(tutorialBuildings, 0, 0, width, height);
+    else if (tutPage == 2)
+      image(tutorialCrafting, 0, 0, width, height);
+    else if (tutPage == 3) {
+      toggleTutorial(false);
+      return;  
+    }
+    tutorial.render();
   }
 }
 
@@ -109,7 +132,7 @@ void setup() {
   // Processing setup
   //fullScreen();
   size(1980, 1080);
-  //size(1000, 500);
+  //size(1980/2, 1080/2);
   frameRate(60);
   background(255);
 
@@ -123,6 +146,7 @@ void setup() {
 // Clears old game data and makes a new game
 void newGame() {
   gameWorld = new World();
+
   activeSignals.clear();
   worldBuildings.clear();
   alertStack.clear();
@@ -130,11 +154,15 @@ void newGame() {
   isGamePaused = false;
   firstPauseFrame = true;
   stageNumber = 1;
+  globalInterference = 0;
+  globalMoney = 80;
+  earnedAmount = 0;
+  spentAmount = 0;
   
   initializeGround();
   text("Generating Map", 0, 0, width, height);  
   
-  float x = random(50, width-50);
+  float x = random((width/2)-500, (width/2)+500);
   float y = height-50;
   theBank = addBuilding(new PVector(x, y), BuildingType.bank);
   
@@ -158,6 +186,12 @@ void updateBuildings(boolean tickFrame) {
       else
         b.tickSecond();
     }
+  }
+}
+// renders the buildingUI
+void renderBuildingUI() {
+  for (InfoPanel p : buildingUI){
+    p.render();
   }
 }
 // renders buildings wihtout updating
